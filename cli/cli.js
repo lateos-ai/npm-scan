@@ -12,7 +12,7 @@ program
   .description('Scan a package')
   .argument('<target>', 'package name')
   .option('-l, --license-key <key>', 'Premium license')
-  .option('--sbom [format]', 'Generate SBOM (json/xml/spdx)', 'json')
+  .option('--sbom [format]', 'Generate SBOM (json/xml/spdx)')
   .action(async (target, options) => {
     try {
       const { pkgJson, jsFiles, tmpDir } = await import('../backend/fetch.js').then(m => m.fetchPackage(target));
@@ -46,7 +46,7 @@ program
   .command('report')
   .description('Generate report')
   .option('-i, --id <id>', 'Scan ID')
-  .option('--sbom [format]', 'SBOM format (json/xml/spdx)', 'json')
+  .option('--sbom [format]', 'SBOM format (json/xml/spdx)')
   .option('--html', 'HTML report')
   .option('--nist', 'NIST 800-161 compliance report')
   .action(async (options) => {

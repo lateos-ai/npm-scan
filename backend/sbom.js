@@ -17,13 +17,16 @@ function generateCycloneDX(pkgJson, findings) {
       },
       tools: [{ name: 'npm-scan', version: '0.2.5' }]
     },
-    vulnerabilities: findings.map(f => ({
-      id: f.id,
+    vulnerabilities: findings.map(f => {
+      const atkId = f.atk_id || f.id;
+      return {
+      id: atkId,
       source: { name: 'npm-scan' },
       ratings: [{ severity: f.severity }],
-      description: f.title || '',
+      description: f.description || f.title || '',
       recommendation: f.mitigation || 'Review evidence'
-    }))
+      };
+    })
   };
   return JSON.stringify(bom, null, 2);
 }
