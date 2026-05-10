@@ -81,9 +81,56 @@ tests/        Corpus: 5 clean + 33 malicious packages
 | ATK-009 | Conditional/dormant triggers (CI, time)     | high     |
 | ATK-010 | Sandbox evasion / anti-analysis             | medium   |
 | ATK-011 | Transitive propagation (worm)               | high     |
-| ATK-011 | Transitive propagation (worm)               | high     |
 
 See `docs/attack-taxonomy.md` for full NIST 800-161 mappings, evasion surfaces, and PoC examples.
+
+## Enterprise Features
+
+### SAML SSO
+
+SAML 2.0 single sign-on for enterprise deployments. Supports:
+
+- **IdPs:** Okta, Azure AD / Entra ID, OneLogin, Keycloak, any SAML 2.0 compliant provider
+- **Flow:** SP-initiated SSO redirect → IdP auth → assertion validation → JWT issuance
+- **Provisioning:** auto-creates users from SAML attributes with RBAC (admin/editor/viewer)
+- **Security:** signed AuthnRequests, verified assertions, HMAC-SHA256 JWTs, Single Logout
+
+```
+GET  /api/v1/sso/metadata    # SP metadata XML for IdP registration
+GET  /api/v1/sso/login       # Start SSO (redirects to IdP)
+POST /api/v1/sso/acs         # SAML callback (IdP POSTs here)
+POST /api/v1/sso/slo         # Single Logout
+```
+
+Requires enterprise license. Configure via env vars or `api/saml-config.yaml`. See `api/README.md` for full docs.
+
+### REST API
+
+FastAPI-based API for the hosted tier. See `api/README.md` for endpoint reference, auth methods, and configuration.
+
+## Enterprise Features
+
+### SAML SSO
+
+SAML 2.0 single sign-on for enterprise deployments. Supports:
+
+- **IdPs:** Okta, Azure AD / Entra ID, OneLogin, Keycloak, any SAML 2.0 compliant provider
+- **Flow:** SP-initiated SSO redirect → IdP auth → assertion validation → JWT issuance
+- **Provisioning:** auto-creates users from SAML attributes with RBAC (admin/editor/viewer)
+- **Security:** signed AuthnRequests, verified assertions, HMAC-SHA256 JWTs, Single Logout
+
+```
+GET  /api/v1/sso/metadata    # SP metadata XML for IdP registration
+GET  /api/v1/sso/login       # Start SSO (redirects to IdP)
+POST /api/v1/sso/acs         # SAML callback (IdP POSTs here)
+POST /api/v1/sso/slo         # Single Logout
+```
+
+Requires enterprise license. Configure via env vars or `api/saml-config.yaml`. See `api/README.md` for full docs.
+
+### REST API
+
+FastAPI-based API for the hosted tier. See `api/README.md` for endpoint reference, auth methods, and configuration.
 
 ## Development
 
