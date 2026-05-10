@@ -1,0 +1,1 @@
+export async function scan(pkgJson, files = []) {\n  const findings = [];\n  const code = files.map(f => f.content).join('\\n');\n  if (/fetch|curl.*(github|pastebin|c2)|post.*data/g.test(code)) {\n    findings.push({\n      id: 'ATK-005',\n      severity: 'critical',\n      title: 'Network exfiltration',\n      evidence: 'curl/fetch C2'\n    });\n  }\n  return findings;\n}
