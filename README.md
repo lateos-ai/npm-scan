@@ -25,6 +25,7 @@ npx @lateos/npm-scan scan lodash
 - **EU CRA Compliance** — report maps findings to Cyber Resilience Act articles (premium)
 - **License Key Gating** — premium features locked behind signed license keys
 - **REST API** — FastAPI-based API with webhooks, auth, scan management (premium)
+- **SAML SSO** — enterprise single sign-on via Okta, Azure AD, OneLogin, Keycloak (enterprise)
 - **Kubernetes / Helm** — Helm chart for deploying the full pipeline on K8s (premium)
 - **SQLite Storage** — local scan history, zero external dependencies
 - **CLI** — `scan`, `scan-lockfile`, `report --sbom --html --nist --cra --siem`
