@@ -1,0 +1,1 @@
+name: npm-scan\n\non: [pull_request]\n\njobs:\n  scan:\n    runs-on: ubuntu-latest\n    steps:\n    - uses: actions/checkout@v4\n    - uses: actions/setup-node@v4\n      with:\n        node-version: 20\n    - run: npm ci\n    - run: npx @lateos/npm-scan@latest scan-lockfile\n      # Or: npm-scan scan-lockfile (if global)\n    # Fail PR on high/critical

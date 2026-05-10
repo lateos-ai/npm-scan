@@ -1,4 +1,1 @@
-#!/usr/bin/env node
-console.log('🚀 npm-scan v0.1.0');
-console.log('npm supply chain security scanner');
-console.log('Run "npm-scan --help" for usage\n');
+#!/usr/bin/env node\n\nimport { Command } from 'commander';\nimport { fileURLToPath } from 'url';\nimport { dirname, join } from 'path';\n\nconst __filename = fileURLToPath(import.meta.url);\nconst __dirname = dirname(__filename);\n\nconst program = new Command()\n  .name('npm-scan')\n  .description('npm supply chain security scanner')\n  .version('0.1.1');\n\nprogram\n  .command('scan')\n  .description('Scan package or lockfile')\n  .argument('<target>', 'package name or lockfile path')\n  .option('-l, --license-key <key>', 'Premium license')\n  .action((target, options) => {\n    console.log(`Scanning ${target}...`);\n    // Phase 1: static ATK-001-007\n    console.log('Findings: stub (implement detectors)');\n  });\n\nprogram\n  .command('scan-lockfile')\n  .description('Scan package-lock.json')\n  .action(() => {\n    console.log('Scanning lockfile...');\n  });\n\nprogram\n  .command('report')\n  .description('Generate report')\n  .action(() => {\n    console.log('Report stub');\n  });\n\nprogram.parse();
