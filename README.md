@@ -17,11 +17,13 @@ npx @lateos/npm-scan scan lodash
 
 ## Features
 
-- **Static Analysis** — detects malicious lifecycle scripts, obfuscated payloads, credential harvesting, persistence, network exfiltration, dependency confusion, typosquatting, tarball tampering, conditional triggers, and sandbox evasion (ATK-001–010)
+- **Static Analysis** — detects malicious lifecycle scripts, obfuscated payloads, credential harvesting, persistence, network exfiltration, dependency confusion, typosquatting, tarball tampering, conditional triggers, sandbox evasion, and transitive propagation (ATK-001–011)
 - **SBOM Output** — CycloneDX 1.5 and SPDX 2.3 with findings mapped as vulnerabilities
-- **NIST 800-161 Compliance** — HTML report includes control traceability matrix (SR-2.1 → SR-10.3)
+- **NIST 800-161 Compliance** — HTML report includes control traceability matrix (SR-2.1 → SR-11.4)
+- **EU CRA Compliance** — report maps findings to Cyber Resilience Act articles and Annex I requirements
+- **SIEM Export** — CEF format for Splunk and other SIEM ingestion
 - **SQLite Storage** — local scan history, zero external dependencies
-- **CLI** — `scan`, `scan-lockfile`, `report --sbom --html --nist`
+- **CLI** — `scan`, `scan-lockfile`, `report --sbom --html --nist --cra --siem`
 - **Dynamic Sandbox** — gVisor-based isolation (premium, documented in `docs/sandbox-threat-model.md`)
 - **GitHub Action** — scans lockfile on PRs
 - **Docker** — multi-arch images via GHCR
@@ -38,7 +40,13 @@ npm-scan report -i <id>              Show findings for a scan
 npm-scan report -i <id> --sbom       Generate CycloneDX SBOM
 npm-scan report -i <id> --sbom spdx  Generate SPDX SBOM
 npm-scan report -i <id> --html       Generate HTML report (with NIST table)
+npm-scan report -i <id> --nist       Print NIST 800-161 compliance table
+npm-scan report -i <id> --cra        Print EU CRA compliance table
+npm-scan report -i <id> --siem cef   Generate SIEM CEF output
 npm-scan report --html               Generate HTML report for all scans
+npm-scan report --nist               Print NIST compliance for all scans
+npm-scan report --cra                Print EU CRA compliance for all scans
+npm-scan report --siem cef           Generate SIEM for all scans
 ```
 
 ## Architecture
@@ -48,7 +56,7 @@ cli/          Commander.js CLI entrypoint
 backend/      Detectors, fetch, SQLite db, SBOM, report
 docker/       Multi-arch Docker images + compose
 docs/         Project plan, attack taxonomy (ATK), sandbox threat model
-tests/        Corpus: 5 clean + 30 malicious packages
+tests/        Corpus: 5 clean + 33 malicious packages
 ```
 
 ## Detectors (ATK Taxonomy)
@@ -65,6 +73,8 @@ tests/        Corpus: 5 clean + 30 malicious packages
 | ATK-008 | Tarball tampering (published ≠ source)      | high     |
 | ATK-009 | Conditional/dormant triggers (CI, time)     | high     |
 | ATK-010 | Sandbox evasion / anti-analysis             | medium   |
+| ATK-011 | Transitive propagation (worm)               | high     |
+| ATK-011 | Transitive propagation (worm)               | high     |
 
 See `docs/attack-taxonomy.md` for full NIST 800-161 mappings, evasion surfaces, and PoC examples.
 
@@ -73,8 +83,8 @@ See `docs/attack-taxonomy.md` for full NIST 800-161 mappings, evasion surfaces, 
 ```bash
 npm install
 npm run dev          # CLI stub
-npm run test         # Unit tests (13)
-npm run corpus       # False-positive corpus test (30 malicious, 5 clean)
+npm run test         # Unit tests (14)
+npm run corpus       # False-positive corpus test (33 malicious, 5 clean)
 ```
 
 ## License
