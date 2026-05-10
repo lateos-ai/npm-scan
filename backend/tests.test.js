@@ -228,7 +228,8 @@ test('license reject invalid key format', async () => {
 test('license reject tampered key', async () => {
   const m = await import('./license.js');
   const key = m.generateKey('premium');
-  const tampered = key.slice(0, -1) + '0';
+  const parts = key.split('.');
+  const tampered = 'npm-scan-community-AAAA.' + parts[1];
   assert.throws(() => m.validateLicense(tampered, 'siem'), /invalid/i);
 });
 
