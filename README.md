@@ -21,7 +21,7 @@ npx @lateos/npm-scan scan lodash
 - **SBOM Output** — CycloneDX 1.5 and SPDX 2.3 with findings mapped as vulnerabilities
 - **NIST 800-161 Compliance** — HTML report includes control traceability matrix (SR-2.1 → SR-11.4)
 - **EU CRA Compliance** — report maps findings to Cyber Resilience Act articles and Annex I requirements
-- **SIEM Export** — CEF format for Splunk and other SIEM ingestion (premium)
+- **SIEM Export** — Splunk CEF, Elastic ECS, Microsoft Sentinel, IBM QRadar formats (premium)
 - **EU CRA Compliance** — report maps findings to Cyber Resilience Act articles (premium)
 - **License Key Gating** — premium features locked behind signed license keys
 - **REST API** — FastAPI-based API with webhooks, auth, scan management (premium)
@@ -47,7 +47,7 @@ npm-scan report -i <id> --sbom spdx  Generate SPDX SBOM
 npm-scan report -i <id> --html       Generate HTML report (with NIST table)
 npm-scan report -i <id> --nist       Print NIST 800-161 compliance table
 npm-scan report -i <id> --cra        Print EU CRA compliance table
-npm-scan report -i <id> --siem cef   Generate SIEM CEF output (premium)
+npm-scan report -i <id> --siem <fmt>   Generate SIEM output (cef|ecs|sentinel|qradar) (premium)
 npm-scan report --html               Generate HTML report for all scans
 npm-scan report --nist               Print NIST compliance for all scans
 npm-scan report --cra                Print EU CRA compliance for all scans (premium)

@@ -60,7 +60,7 @@ program
   .option('--html', 'HTML report')
   .option('--nist', 'NIST 800-161 compliance report')
   .option('--cra', 'EU CRA compliance report')
-  .option('--siem <format>', 'SIEM format (cef)')
+  .option('--siem <format>', 'SIEM format (cef|ecs|sentinel|qradar)')
   .option('-l, --license-key <key>', 'Premium license')
   .action(async (options) => {
     const licenseKey = options.licenseKey || process.env.NPM_SCAN_LICENSE_KEY;
