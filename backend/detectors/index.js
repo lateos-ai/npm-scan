@@ -5,6 +5,9 @@ import * as atk004 from './atk-004-persist.js';
 import * as atk005 from './atk-005-exfil.js';
 import * as atk006 from './atk-006-depconf.js';
 import * as atk007 from './atk-007-typosquat.js';
+import * as atk008 from './atk-008-tarball-tamper.js';
+import * as atk009 from './atk-009-dormant-trigger.js';
+import * as atk010 from './atk-010-sandbox-evasion.js';
 
 export async function runAll(pkgJson, files = []) {
   const findings = [];
@@ -15,5 +18,8 @@ export async function runAll(pkgJson, files = []) {
   findings.push(...await atk005.scan(pkgJson, files));
   findings.push(...await atk006.scan(pkgJson, files));
   findings.push(...await atk007.scan(pkgJson, files));
+  findings.push(...await atk008.scan(pkgJson, files));
+  findings.push(...await atk009.scan(pkgJson, files));
+  findings.push(...await atk010.scan(pkgJson, files));
   return findings.sort((a, b) => b.severity.localeCompare(a.severity));
 }

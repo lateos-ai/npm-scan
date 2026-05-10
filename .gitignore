@@ -2,3 +2,4 @@ node_modules/
 npm-scan.db
 *.tgz
 !tests/corpus/**/*.tgz
+.DS_Store

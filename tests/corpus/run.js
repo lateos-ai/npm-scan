@@ -1,4 +1,3 @@
-import assert from 'assert/strict';
 import { globSync } from 'glob';
 import { readFileSync, mkdtempSync } from 'fs';
 import { execSync } from 'child_process';
@@ -23,18 +22,22 @@ function scanLocalTarball(tarPath) {
 
 let cleanFails = 0;
 let malFails = 0;
+let cleanTotal = 0;
+let malTotal = 0;
 
 console.log('--- Clean corpus (remote) ---');
 for (const pkg of ['lodash', 'chalk', 'react', 'axios', 'express']) {
+  cleanTotal++;
   try {
     const { pkgJson, jsFiles, tmpDir } = await fetchPackage(pkg);
     const findings = await runAll(pkgJson, jsFiles);
     const bad = findings.filter(f => f.severity === 'high' || f.severity === 'critical');
+    const badIds = bad.map(f => f.id).join(', ');
     if (bad.length > 0) {
-      console.log(`  FAIL ${pkg}: ${bad.length} high/crit (${bad.map(f => f.id).join(', ')})`);
+      console.log(`  FAIL ${pkg}: ${bad.length} high/crit (${badIds})`);
       cleanFails++;
     } else {
-      console.log(`  OK   ${pkg}`);
+      console.log(`  OK   ${pkg} (no high/crit findings)`);
     }
     cleanup(tmpDir);
   } catch (e) {
@@ -45,11 +48,13 @@ for (const pkg of ['lodash', 'chalk', 'react', 'axios', 'express']) {
 
 console.log('--- Malicious corpus (local) ---');
 const malTars = globSync('tests/corpus/malicious/*.tgz');
+malTotal = malTars.length;
 for (const tar of malTars) {
   const name = path.basename(tar, '.tgz');
   try {
     const { pkgJson, jsFiles } = scanLocalTarball(tar);
     const findings = await runAll(pkgJson, jsFiles);
+    const ids = findings.map(f => f.id).join(', ');
     if (findings.length === 0) {
       console.log(`  FAIL ${name}: no findings`);
       console.log(`    scripts: ${JSON.stringify(pkgJson.scripts || {})}`);
@@ -57,7 +62,7 @@ for (const tar of malTars) {
       console.log(`    js files: ${jsFiles.length}`);
       malFails++;
     } else {
-      console.log(`  OK   ${name}: ${findings.length} findings (${findings.map(f => f.id).join(', ')})`);
+      console.log(`  OK   ${name}: ${ids}`);
     }
   } catch (e) {
     console.log(`  ERR  ${name}: ${e.message}`);
@@ -65,15 +70,24 @@ for (const tar of malTars) {
   }
 }
 
-const fpRate = (cleanFails / 5 * 100).toFixed(1);
-const malDetectRate = ((malTars.length - malFails) / malTars.length * 100).toFixed(1);
+const fpRate = cleanTotal > 0 ? (cleanFails / cleanTotal * 100).toFixed(1) : 'N/A';
+const malDetectRate = malTotal > 0 ? ((malTotal - malFails) / malTotal * 100).toFixed(1) : 'N/A';
 console.log(`\n=== Corpus Results ===`);
-console.log(`Clean FP rate: ${fpRate}% (${cleanFails}/5 high/crit)`);
-console.log(`Mal detect rate: ${malDetectRate}% (${malTars.length - malFails}/${malTars.length})`);
+console.log(`Clean packages: ${cleanTotal}, Malicious samples: ${malTotal}`);
+console.log(`Clean FP rate: ${fpRate}% (${cleanFails}/${cleanTotal} high/crit)`);
+console.log(`Mal detect rate: ${malDetectRate}% (${malTotal - malFails}/${malTotal})`);
 
-if (Number(fpRate) >= 2) {
+let exitCode = 0;
+if (fpRate !== 'N/A' && Number(fpRate) >= 2) {
   console.log(`FP <2% : FAIL (${fpRate}% exceeds 2%)`);
-  process.exit(1);
+  exitCode = 1;
+} else {
+  console.log('FP <2% : PASS');
 }
-console.log('FP <2% : PASS');
-console.log('Test corpus FP <2% PASS');
+if (malDetectRate !== 'N/A' && Number(malDetectRate) < 100) {
+  console.log(`Mal 100% : FAIL (${malDetectRate}%)`);
+  exitCode = 1;
+} else {
+  console.log('Mal 100% : PASS');
+}
+process.exit(exitCode);
