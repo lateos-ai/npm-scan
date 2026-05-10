@@ -1,0 +1,32 @@
+{{- if .Values.worker.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "npm-scan.name" . }}-worker
+  labels:
+    app: {{ include "npm-scan.name" . }}-worker
+    {{- include "npm-scan.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.worker.replicas }}
+  selector:
+    matchLabels:
+      app: {{ include "npm-scan.name" . }}-worker
+  template:
+    metadata:
+      labels:
+        app: {{ include "npm-scan.name" . }}-worker
+    spec:
+      containers:
+        - name: worker
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["node", "cli/cli.js"]
+          env:
+            - name: NPM_SCAN_LICENSE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "npm-scan.name" . }}-license
+                  key: key
+                  optional: true
+          resources: {{- toYaml .Values.worker.resources | nindent 12 }}
+{{- end }}

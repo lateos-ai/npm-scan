@@ -21,7 +21,11 @@ npx @lateos/npm-scan scan lodash
 - **SBOM Output** — CycloneDX 1.5 and SPDX 2.3 with findings mapped as vulnerabilities
 - **NIST 800-161 Compliance** — HTML report includes control traceability matrix (SR-2.1 → SR-11.4)
 - **EU CRA Compliance** — report maps findings to Cyber Resilience Act articles and Annex I requirements
-- **SIEM Export** — CEF format for Splunk and other SIEM ingestion
+- **SIEM Export** — CEF format for Splunk and other SIEM ingestion (premium)
+- **EU CRA Compliance** — report maps findings to Cyber Resilience Act articles (premium)
+- **License Key Gating** — premium features locked behind signed license keys
+- **REST API** — FastAPI-based API with webhooks, auth, scan management (premium)
+- **Kubernetes / Helm** — Helm chart for deploying the full pipeline on K8s (premium)
 - **SQLite Storage** — local scan history, zero external dependencies
 - **CLI** — `scan`, `scan-lockfile`, `report --sbom --html --nist --cra --siem`
 - **Dynamic Sandbox** — gVisor-based isolation (premium, documented in `docs/sandbox-threat-model.md`)
@@ -42,19 +46,21 @@ npm-scan report -i <id> --sbom spdx  Generate SPDX SBOM
 npm-scan report -i <id> --html       Generate HTML report (with NIST table)
 npm-scan report -i <id> --nist       Print NIST 800-161 compliance table
 npm-scan report -i <id> --cra        Print EU CRA compliance table
-npm-scan report -i <id> --siem cef   Generate SIEM CEF output
+npm-scan report -i <id> --siem cef   Generate SIEM CEF output (premium)
 npm-scan report --html               Generate HTML report for all scans
 npm-scan report --nist               Print NIST compliance for all scans
-npm-scan report --cra                Print EU CRA compliance for all scans
-npm-scan report --siem cef           Generate SIEM for all scans
+npm-scan report --cra                Print EU CRA compliance for all scans (premium)
+npm-scan report --siem cef           Generate SIEM for all scans (premium)
 ```
 
 ## Architecture
 
 ```
 cli/          Commander.js CLI entrypoint
-backend/      Detectors, fetch, SQLite db, SBOM, report
+backend/      Detectors, fetch, SQLite db, SBOM, report, license, SIEM, CRA
+api/          FastAPI REST API + webhooks (premium)
 docker/       Multi-arch Docker images + compose
+deploy/       Kubernetes Helm chart (premium)
 docs/         Project plan, attack taxonomy (ATK), sandbox threat model
 tests/        Corpus: 5 clean + 33 malicious packages
 ```

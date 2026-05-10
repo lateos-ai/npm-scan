@@ -1,0 +1,67 @@
+{{- if .Values.postgresql.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "npm-scan.name" . }}-postgresql
+  labels:
+    app: {{ include "npm-scan.name" . }}-postgresql
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ include "npm-scan.name" . }}-postgresql
+  template:
+    metadata:
+      labels:
+        app: {{ include "npm-scan.name" . }}-postgresql
+    spec:
+      containers:
+        - name: postgresql
+          image: postgres:16-alpine
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_DB
+              value: "{{ .Values.postgresql.database }}"
+            - name: POSTGRES_USER
+              value: "{{ .Values.postgresql.username }}"
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "npm-scan.name" . }}-pg
+                  key: password
+          {{- if .Values.persistence.enabled }}
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ include "npm-scan.name" . }}-pg
+          {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "npm-scan.name" . }}-postgresql
+spec:
+  ports:
+    - port: 5432
+  selector:
+    app: {{ include "npm-scan.name" . }}-postgresql
+---
+{{- if .Values.persistence.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "npm-scan.name" . }}-pg
+spec:
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: {{ .Values.persistence.size }}
+  {{- with .Values.persistence.storageClass }}
+  storageClassName: {{ . }}
+  {{- end }}
+{{- end }}
+{{- end }}
