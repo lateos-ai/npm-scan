@@ -1,6 +1,6 @@
 {
   "name": "@lateos/npm-scan",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Powerful npm supply chain security scanner - detects malicious packages (Shai-Hulud style), behavioral analysis, SBOM, and compliance reporting.",
   "main": "backend/index.js",
   "bin": {
