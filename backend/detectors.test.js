@@ -67,6 +67,12 @@ test('ATK-010 detects sandbox evasion', async () => {
   assert(findings.some(f => f.id === 'ATK-010'), 'Expected ATK-010');
 });
 
+test('ATK-011 detects transitive propagation', async () => {
+  const files = [{ path: 'i.js', content: 'exec("npm install ./malicious-pkg")' }];
+  const findings = await detectors.runAll({}, files);
+  assert(findings.some(f => f.id === 'ATK-011'), 'Expected ATK-011');
+});
+
 test('no false positives on clean package', async () => {
   const pkg = { name: 'test-pkg', version: '1.0.0', scripts: { test: 'node test.js' }, dependencies: { 'express': '4.0.0' } };
   const files = [{ path: 'index.js', content: 'module.exports = function() { return 42 }' }];
@@ -75,8 +81,8 @@ test('no false positives on clean package', async () => {
   assert.equal(highCrit.length, 0, `Expected no high/crit findings on clean pkg: ${JSON.stringify(highCrit)}`);
 });
 
-test('all 10 ATK IDs present', async () => {
-  const expected = ['ATK-001', 'ATK-002', 'ATK-003', 'ATK-004', 'ATK-005', 'ATK-006', 'ATK-007', 'ATK-008', 'ATK-009', 'ATK-010'];
+test('all 11 ATK IDs present', async () => {
+  const expected = ['ATK-001', 'ATK-002', 'ATK-003', 'ATK-004', 'ATK-005', 'ATK-006', 'ATK-007', 'ATK-008', 'ATK-009', 'ATK-010', 'ATK-011'];
   const exports = Object.keys(detectors);
   assert.equal(exports.includes('runAll'), true);
 });

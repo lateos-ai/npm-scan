@@ -8,6 +8,7 @@ import * as atk007 from './atk-007-typosquat.js';
 import * as atk008 from './atk-008-tarball-tamper.js';
 import * as atk009 from './atk-009-dormant-trigger.js';
 import * as atk010 from './atk-010-sandbox-evasion.js';
+import * as atk011 from './atk-011-transitive-prop.js';
 
 export async function runAll(pkgJson, files = []) {
   const findings = [];
@@ -21,5 +22,6 @@ export async function runAll(pkgJson, files = []) {
   findings.push(...await atk008.scan(pkgJson, files));
   findings.push(...await atk009.scan(pkgJson, files));
   findings.push(...await atk010.scan(pkgJson, files));
+  findings.push(...await atk011.scan(pkgJson, files));
   return findings.sort((a, b) => b.severity.localeCompare(a.severity));
 }

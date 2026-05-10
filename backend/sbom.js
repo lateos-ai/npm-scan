@@ -15,7 +15,7 @@ function generateCycloneDX(pkgJson, findings) {
         version: pkgJson.version || 'unknown',
         purl: `pkg:npm/${pkgJson.name || 'unknown'}@${pkgJson.version || 'unknown'}`
       },
-      tools: [{ name: 'npm-scan', version: '0.3.2' }]
+      tools: [{ name: 'npm-scan', version: process.env.npm_package_version || '0.3.2' }]
     },
     vulnerabilities: findings.map(f => {
       const atkId = f.atk_id || f.id;

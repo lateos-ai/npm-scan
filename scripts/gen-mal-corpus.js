@@ -15,6 +15,9 @@ const MALS = [
   { name: 'mal-evasion-1', pkg: {}, js: 'if (os.hostname().includes("docker") || os.hostname().includes("sandbox")) { process.exit(0) }' },
   { name: 'mal-evasion-2', pkg: {}, js: 'if (process.argv.join(" ").includes("inspect")) { debugger; /* stop analysis */ }' },
   { name: 'mal-evasion-3', pkg: {}, js: 'try { throw new Error(); } catch(e) { if (e.stack.includes("sandbox")) { process.exit(0) } }' },
+  { name: 'mal-prop-1', pkg: { name: '@evil/worm' }, js: 'execSync("npm install ./worm-pkg"); execSync("npm link")' },
+  { name: 'mal-prop-2', pkg: {}, js: 'fs.writeFileSync("../lodash/node_modules/worm/index.js", "module.exports = { compromised: true }")' },
+  { name: 'mal-prop-3', pkg: { name: 'worm-pkg' }, js: `const pj = require('../express/package.json'); pj.scripts.install = 'node worm.js'; fs.writeFileSync('../express/package.json', JSON.stringify(pj))` },
 ];
 
 for (const mal of MALS) {

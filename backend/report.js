@@ -93,6 +93,7 @@ const NIST_SR_MAP = {
   'ATK-008': { control: 'SR-8.1', title: 'Integrity verification' },
   'ATK-009': { control: 'SR-9.2', title: 'Conditional behavior analysis' },
   'ATK-010': { control: 'SR-10.3', title: 'Anti-evasion detection' },
+  'ATK-011': { control: 'SR-11.4', title: 'Supply chain propagation monitoring' },
 };
 
 function generateNistTable(scans) {

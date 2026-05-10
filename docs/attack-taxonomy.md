@@ -16,7 +16,7 @@ Versioned anchor for detectors, PRs, reports. Each entry: attack class, detectio
 | ATK-008 | Tarball tampering (tarball ≠ repo)         | Static (diff)   | Mirror repos             | SR-8.1           | Phase 2 |
 | ATK-009 | Conditional triggers (CI/time)             | Static+Dynamic  | Env probes               | SR-9.2           | Phase 2 |
 | ATK-010 | Sandbox evasion                            | Static+Dynamic  | Anti-analysis            | SR-10.3          | Phase 2 |
-| ATK-011 | Transitive propagation (worm)              | Dynamic         | Peer deps                | SR-11.4          | Phase 3 |
+| ATK-011 | Transitive propagation (worm)              | Static+Dynamic  | Peer deps                | SR-11.4          | Phase 3 |
 
 ## Detailed Entries
 
@@ -40,6 +40,13 @@ Versioned anchor for detectors, PRs, reports. Each entry: attack class, detectio
 - **Evasion surface:** Indirect probing (measure timing without `performance.now()`), environment fingerprinting through error messages, incremental evasion.
 - **NIST mapping:** SR-10.3 (Anti-Evasion Detection)
 - **Example:** `if (os.hostname().includes('docker')) { process.exit(0) }`
+
+### ATK-011 — Transitive Propagation (Worm)
+- **Description:** The package acts as a self-propagating worm by spreading itself through the dependency tree. Instead of (or in addition to) executing a standalone payload, it modifies peer/sibling packages' code or `package.json` to inject its own lifecycle hooks or entry points. This propagates the attack when the infected sibling is required by other packages upstream. Also covers "worm-drop" patterns where the package installs itself into other packages' `node_modules` via programmatic `npm install`/`npm link`.
+- **Detection surface:** Static+Dynamic. Static analysis checks for `child_process.exec`/`execSync` with `npm install`/`npm link` of local packages, `fs.writeFile` targeting sibling `node_modules` directories, `package.json` script injection in other packages, `fs.symlink` for binary propagation, and self-name references used to locate and copy own code into peer packages. Dynamic sandbox monitors filesystem writes outside the package's own directory tree.
+- **Evasion surface:** Peer dep confusion (installing a popular peer package with the same name as a benign transitive dep), delayed propagation (worm activates only after N runs or N days), piggybacking on legitimate `postinstall` chains, writing to `node_modules/.cache` or `node_modules/.bin` where detection is less likely.
+- **NIST mapping:** SR-11.4 (Supply Chain Propagation Monitoring)
+- **Example:** A package reads `process.env.npm_package_name`, locates its own directory in `node_modules`, then writes a malicious `postinstall` script to the `package.json` of a sibling package, ensuring the worm runs when any project dependency is installed.
 
 ## Governance
 
