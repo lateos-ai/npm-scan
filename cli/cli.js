@@ -50,17 +50,20 @@ program
   .option('--html', 'HTML report')
   .option('--nist', 'NIST 800-161 compliance report')
   .action(async (options) => {
-    const { getRecentScans, getFindings, db } = await import('../backend/db.js');
+    const { getRecentScans, getFindings, getScan } = await import('../backend/db.js');
     if (options.id) {
       const findings = getFindings(options.id);
-      const pkg = { name: 'scanned-pkg', version: 'unknown' };
+      const scanInfo = getScan(options.id);
+      const pkgName = scanInfo?.package_name || 'scan-' + options.id;
+      const pkgVer = scanInfo?.version || 'unknown';
+      const pkg = { name: pkgName, version: pkgVer };
       if (options.sbom) {
         const { generateSBOM } = await import('../backend/sbom.js');
         const sbom = generateSBOM(pkg, findings, options.sbom === true ? 'json' : options.sbom);
         console.log(sbom);
       } else if (options.html || options.nist) {
         const { generateHTML } = await import('../backend/report.js');
-        const scan = findings.length ? { package_name: 'scan-' + options.id, findings } : null;
+        const scan = findings.length ? { package_name: pkgName, version: pkgVer, findings } : null;
         const html = generateHTML(scan ? [scan] : []);
         console.log(html);
       } else {

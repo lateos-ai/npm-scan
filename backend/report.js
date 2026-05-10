@@ -6,7 +6,7 @@ export function generateHTML(scans) {
     const worstLabel = ['', 'info', 'low', 'medium', 'high', 'critical'][worst] || 'clean';
     const color = { critical: '#d73a49', high: '#cb2431', medium: '#f66a0a', low: '#dbab09', clean: '#28a745' }[worstLabel] || '#28a745';
     const findingRows = findings.map(f =>
-      `<tr><td>${f.id}</td><td style="color:${color}">${f.severity}</td><td>${f.title || ''}</td><td>${(f.evidence || '').slice(0, 80)}</td></tr>`
+      `<tr><td>${f.atk_id || f.id}</td><td style="color:${color}">${f.severity}</td><td>${f.description || f.title || ''}</td><td>${(f.evidence || '').slice(0, 80)}</td></tr>`
     ).join('');
     return { name: s.package_name, worstLabel, color, count: findings.length, findingRows };
   });
@@ -65,7 +65,7 @@ th { background: #161b22; font-weight: 600; }
 <h2>NIST SP 800-161 Compliance Summary</h2>
 ${nistMap}
 
-<p class="meta">npm-scan v0.2.5 | Apache-2.0 + Commons Clause | NIST SP 800-161 mapped</p>
+<p class="meta">npm-scan v${process.env.npm_package_version || '0.3.2'} | Apache-2.0 + Commons Clause | NIST SP 800-161 mapped</p>
 </body>
 </html>`;
 }
@@ -74,8 +74,9 @@ function getAtkFindings(scans) {
   const map = {};
   for (const s of scans) {
     for (const f of (s.findings || [])) {
-      if (!map[f.id]) map[f.id] = [];
-      map[f.id].push(f);
+      const key = f.atk_id || f.id;
+      if (!map[key]) map[key] = [];
+      map[key].push(f);
     }
   }
   return map;

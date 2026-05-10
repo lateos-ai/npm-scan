@@ -15,7 +15,7 @@ function generateCycloneDX(pkgJson, findings) {
         version: pkgJson.version || 'unknown',
         purl: `pkg:npm/${pkgJson.name || 'unknown'}@${pkgJson.version || 'unknown'}`
       },
-      tools: [{ name: 'npm-scan', version: '0.2.5' }]
+      tools: [{ name: 'npm-scan', version: '0.3.2' }]
     },
     vulnerabilities: findings.map(f => {
       const atkId = f.atk_id || f.id;
@@ -60,7 +60,7 @@ function generateSPDX(pkgJson, findings) {
       annotationDate: new Date().toISOString(),
       annotationType: 'OTHER',
       annotator: 'Tool: npm-scan',
-      comment: `[${f.id}] ${f.severity.toUpperCase()}: ${f.title || ''} — ${f.description || ''}`
+      comment: `[${f.atk_id || f.id}] ${f.severity.toUpperCase()}: ${f.description || f.title || ''}`
     }))
   };
   return JSON.stringify(spdx, null, 2);

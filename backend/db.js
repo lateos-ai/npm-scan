@@ -33,6 +33,10 @@ export function getFindings(scanId) {
   return db.prepare('SELECT * FROM findings WHERE scan_id = ?').all(scanId);
 }
 
+export function getScan(scanId) {
+  return db.prepare('SELECT * FROM scans WHERE id = ?').get(scanId);
+}
+
 export function close() {
   db.close();
 }
