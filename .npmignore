@@ -1,0 +1,6 @@
+tests/corpus/clean/
+tests/corpus/malicious/
+.git/
+.vercel/
+node_modules/
+*.db
