@@ -1,1 +1,38 @@
-import Database from 'better-sqlite3';\nimport fs from 'fs';\nimport path from 'path';\n\nconst DB_PATH = 'npm-scan.db';\n\nlet db;\n\nfunction init() {\n  db = new Database(DB_PATH);\n  const schemaPath = path.join(process.cwd(), 'backend', 'db', 'schema.sql');\n  const schema = fs.readFileSync(schemaPath, 'utf8');\n  db.exec(schema);\n}\n\ninit();\n\nexport function saveScan(pkgName, version = 'latest', findings = []) {\n  const scanStmt = db.prepare('INSERT INTO scans (package_name, version) VALUES (?, ?)');\n  const scanId = scanStmt.run(pkgName, version).lastInsertRowid;\n\n  const findStmt = db.prepare('INSERT INTO findings (scan_id, atk_id, severity, description, evidence) VALUES (?, ?, ?, ?, ?)');\n  for (const f of findings) {\n    findStmt.run(scanId, f.id, f.severity, f.title || f.description, f.evidence || '');\n  }\n\n  return scanId;\n}\n\nexport function getRecentScans(limit = 10) {\n  return db.prepare('SELECT * FROM scans ORDER BY scanned_at DESC LIMIT ?').all(limit);\n}\n\nexport function getFindings(scanId) {\n  return db.prepare('SELECT * FROM findings WHERE scan_id = ?').all(scanId);\n}\n\nexport function close() {\n  db.close();\n}
+import Database from 'better-sqlite3';
+import fs from 'fs';
+import path from 'path';
+
+const DB_PATH = 'npm-scan.db';
+
+let db;
+
+function init() {
+  db = new Database(DB_PATH);
+  const schemaPath = path.join(process.cwd(), 'backend', 'db', 'schema.sql');
+  const schema = fs.readFileSync(schemaPath, 'utf8');
+  db.exec(schema);
+}
+
+init();
+
+export function saveScan(pkgName, version = 'latest', findings = []) {
+  const scanStmt = db.prepare('INSERT INTO scans (package_name, version) VALUES (?, ?)');
+  const scanId = scanStmt.run(pkgName, version).lastInsertRowid;
+  const findStmt = db.prepare('INSERT INTO findings (scan_id, atk_id, severity, description, evidence) VALUES (?, ?, ?, ?, ?)');
+  for (const f of findings) {
+    findStmt.run(scanId, f.id, f.severity, f.title || f.description, f.evidence || '');
+  }
+  return scanId;
+}
+
+export function getRecentScans(limit = 10) {
+  return db.prepare('SELECT * FROM scans ORDER BY scanned_at DESC LIMIT ?').all(limit);
+}
+
+export function getFindings(scanId) {
+  return db.prepare('SELECT * FROM findings WHERE scan_id = ?').all(scanId);
+}
+
+export function close() {
+  db.close();
+}

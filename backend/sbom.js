@@ -1,1 +1,24 @@
-import { CycloneDX } from 'cyclonedx-node';\n\nexport function generateSBOM(pkgJson, findings, format = 'json') {\n  const sbom = new CycloneDX({specVersion: '1.5'});\n  // Components\n  sbom.addComponent({\n    name: pkgJson.name,\n    version: pkgJson.version || 'unknown',\n    type: 'library',\n    purl: `pkg:npm/${pkgJson.name}@${pkgJson.version}`\n  });\n  // Vulnerabilities from findings\n  for (const f of findings) {\n    sbom.addVulnerability({\n      id: f.id,\n      title: f.title,\n      severity: f.severity.toUpperCase(),\n      description: f.description,\n      recommendation: f.mitigation || 'Review evidence'\n    });\n  }\n  return format === 'xml' ? sbom.toJsonXml() : sbom.toJson();\n}
+export function generateSBOM(pkgJson, findings, format = 'json') {
+  // Stub CycloneDX without cyclonedx-node dependency
+  const bom = {
+    bomFormat: 'CycloneDX',
+    specVersion: '1.5',
+    version: 1,
+    metadata: {
+      component: {
+        type: 'library',
+        name: pkgJson.name || 'unknown',
+        version: pkgJson.version || 'unknown',
+        purl: `pkg:npm/${pkgJson.name || 'unknown'}@${pkgJson.version || 'unknown'}`
+      }
+    },
+    vulnerabilities: findings.map(f => ({
+      id: f.id,
+      source: { name: 'npm-scan' },
+      ratings: [{ severity: f.severity }],
+      description: f.title || '',
+      recommendation: f.mitigation || 'Review evidence'
+    }))
+  };
+  return JSON.stringify(bom, null, 2);
+}

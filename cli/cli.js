@@ -1,1 +1,76 @@
-#!/usr/bin/env node\n\nimport { Command } from 'commander';\nimport { fileURLToPath } from 'url';\nimport { dirname, join } from 'path';\n\nconst __filename = fileURLToPath(import.meta.url);\nconst __dirname = dirname(__filename);\n\nconst program = new Command()\n  .name('npm-scan')\n  .description('npm supply chain security scanner')\n  .version('0.1.1');\n\nprogram\n  .command('scan')\n  .description('Scan package')\n  .argument('<target>', 'package name')\n  .option('-l, --license-key <key>', 'Premium license')\n  .action(async (target, options) => {\n    try {\n      const { pkgJson, jsFiles, tmpDir } = await import('../backend/fetch.js').then(m => m.fetchPackage(target));\n      const findings = await import('../backend/detectors/index.js').then(m => m.runAll(pkgJson, jsFiles));\n      const { saveScan } = await import('../backend/db.js');\n      const scanId = saveScan(target, 'latest', findings);\n      console.log(JSON.stringify({scanId, findings}, null, 2));\n      import('../backend/fetch.js').then(m => m.cleanup(tmpDir));\n    } catch (e) {\n      console.error(e.message);\n    }\n  });\n\nprogram\n  .command('scan-lockfile')\n  .description('Scan package-lock.json')\n  .action(() => {\n    console.log('Scanning lockfile...');\n  });\n\nprogram\n  .command('report')\n  .description('Generate report')\n  .option('-i, --id <id>', 'Scan ID')\n  .option('--sbom [format]', 'CycloneDX SBOM (json/xml)', 'json')\n  .action(async (options) => {\n    const { getRecentScans, getFindings } = await import('../backend/db.js');\n    if (options.id) {\n      const findings = getFindings(options.id);\n      if (options.sbom) {\n        const pkg = { name: 'scanned-pkg', version: 'unknown' }; // from scan\n        const { generateSBOM } = await import('../backend/sbom.js');\n        const sbom = generateSBOM(pkg, findings, options.sbom);\n        console.log(sbom);\n      } else {\n        console.log(JSON.stringify(findings, null, 2));\n      }\n    } else {\n      const scans = getRecentScans();\n      console.log('Recent scans:', JSON.stringify(scans, null, 2));\n    }\n  });\n\nprogram.parse();
+#!/usr/bin/env node
+
+import { Command } from 'commander';
+
+const program = new Command()
+  .name('npm-scan')
+  .description('npm supply chain security scanner')
+  .version('0.2.1');
+
+program
+  .command('scan')
+  .description('Scan package')
+  .argument('<target>', 'package name')
+  .option('-l, --license-key <key>', 'Premium license')
+  .action(async (target, options) => {
+    try {
+      const { pkgJson, jsFiles, tmpDir } = await import('../backend/fetch.js').then(m => m.fetchPackage(target));
+      const findings = await import('../backend/detectors/index.js').then(m => m.runAll(pkgJson, jsFiles));
+      const { saveScan } = await import('../backend/db.js');
+      const scanId = saveScan(target, 'latest', findings);
+      console.log(JSON.stringify({scanId, findings}, null, 2));
+      import('../backend/fetch.js').then(m => m.cleanup(tmpDir));
+    } catch (e) {
+      console.error(e.message);
+    }
+  });
+
+program
+  .command('scan-lockfile')
+  .description('Scan package-lock.json')
+  .option('-f, --file <path>', 'lockfile path', 'package-lock.json')
+  .action((options) => {
+    console.log('Scanning lockfile:', options.file);
+  });
+
+program
+  .command('report')
+  .description('Generate report')
+  .option('-i, --id <id>', 'Scan ID')
+  .option('--sbom [format]', 'CycloneDX SBOM (json/xml)', 'json')
+  .option('--html', 'HTML report')
+  .action(async (options) => {
+    const { getRecentScans, getFindings, db } = await import('../backend/db.js');
+    if (options.id) {
+      const findings = getFindings(options.id);
+      if (options.sbom) {
+        const pkg = { name: 'scanned-pkg', version: 'unknown' };
+        const { generateSBOM } = await import('../backend/sbom.js');
+        const sbom = generateSBOM(pkg, findings, options.sbom);
+        console.log(sbom);
+      } else if (options.html) {
+        const { generateHTML } = await import('../backend/report.js');
+        const scan = getFindings(options.id) ? { package_name: 'scan-' + options.id, findings } : null;
+        const html = generateHTML(scan ? [scan] : []);
+        console.log(html);
+      } else {
+        console.log(JSON.stringify(findings, null, 2));
+      }
+    } else {
+      if (options.html) {
+        const scans = getRecentScans();
+        const scansWithFindings = scans.map(s => ({
+          ...s,
+          findings: getFindings(s.id)
+        }));
+        const { generateHTML } = await import('../backend/report.js');
+        const html = generateHTML(scansWithFindings);
+        console.log(html);
+      } else {
+        const scans = getRecentScans();
+        console.log('Recent scans:', JSON.stringify(scans, null, 2));
+      }
+    }
+  });
+
+program.parse();

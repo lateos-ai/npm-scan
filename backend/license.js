@@ -1,1 +1,14 @@
-/** @module license */\nexport function validateLicense(key, feature = '*') {\n  // Stub: runtime validation (env var or file)\n  if (!key || !key.startsWith('npm-scan-premium-')) {\n    throw new Error(`Invalid license for feature: ${feature}`);\n  }\n  // TODO: crypto verify signature, expiry, seats\n  return true;\n}\n\nexport function isFeatureEnabled(feature, licenseKey = process.env.NPM_SCAN_LICENSE_KEY) {\n  try {\n    return validateLicense(licenseKey, feature);\n  } catch {\n    return false;\n  }\n}\n\n// Usage: if (!isFeatureEnabled('dynamic-sandbox')) { console.warn('Upgrade for sandbox'); }
+export function validateLicense(key, feature = '*') {
+  if (!key || !key.startsWith('npm-scan-premium-')) {
+    throw new Error(`Invalid license for feature: ${feature}`);
+  }
+  return true;
+}
+
+export function isFeatureEnabled(feature, licenseKey = process.env.NPM_SCAN_LICENSE_KEY) {
+  try {
+    return validateLicense(licenseKey, feature);
+  } catch {
+    return false;
+  }
+}

@@ -1,1 +1,14 @@
-export async function scan(pkgJson, files = []) {\n  const findings = [];\n  const code = files.map(f => f.content).join('\\n');\n  if (/mkdir.*(\\.vscode|\\.claude|\\.cursor)/g.test(code)) {\n    findings.push({\n      id: 'ATK-004',\n      severity: 'high',\n      title: 'Persistence via editor configs',\n      evidence: '.vscode mkdir match'\n    });\n  }\n  return findings;\n}
+export async function scan(pkgJson, files = []) {
+  const findings = [];
+  const code = files.map(f => f.content).join('\n');
+  if (/mkdir.*(\.vscode|\.claude|\.cursor)/.test(code)) {
+    findings.push({
+      id: 'ATK-004',
+      severity: 'high',
+      title: 'Persistence via editor configs',
+      description: 'Creates .vscode/.claude/.cursor dirs',
+      evidence: 'mkdir pattern match'
+    });
+  }
+  return findings;
+}

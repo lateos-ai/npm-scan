@@ -1,1 +1,15 @@
-export async function scan(pkgJson) {\n  const findings = [];\n  const deps = { ...pkgJson.dependencies, ...pkgJson.devDependencies };\n  const squat = Object.keys(deps).filter(d => /squat|confuse|typo/i.test(d.toLowerCase()));\n  if (squat.length) {\n    findings.push({\n      id: 'ATK-006',\n      severity: 'medium',\n      title: 'Dependency confusion',\n      evidence: squat.join(', ')\n    });\n  }\n  return findings;\n}
+export async function scan(pkgJson) {
+  const findings = [];
+  const deps = { ...pkgJson.dependencies, ...pkgJson.devDependencies };
+  const squat = Object.keys(deps).filter(d => /squat|confus|typo/i.test(d.toLowerCase()));
+  if (squat.length) {
+    findings.push({
+      id: 'ATK-006',
+      severity: 'medium',
+      title: 'Dependency confusion',
+      description: 'Suspicious dependency names',
+      evidence: squat.join(', ')
+    });
+  }
+  return findings;
+}

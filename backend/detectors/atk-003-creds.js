@@ -1,1 +1,14 @@
-export async function scan(pkgJson, files = []) {\n  const findings = [];\n  const code = files.map(f => f.content).join('\\n');\n  if (/process.env.(NPM|GIT|AWS|SSH)|\\.npmrc/g.test(code)) {\n    findings.push({\n      id: 'ATK-003',\n      severity: 'high',\n      title: 'Credential harvesting',\n      description: 'Env/ .npmrc access',\n      evidence: 'NPM_TOKEN/.npmrc match'\n    });\n  }\n  return findings;\n}
+export async function scan(pkgJson, files = []) {
+  const findings = [];
+  const code = files.map(f => f.content).join('\n');
+  if (/process\.env\.(NPM_TOKEN|GIT_TOKEN|AWS_SECRET|AWS_ACCESS|SSH_KEY)|\.npmrc|\.ssh\/id_rsa|readFile.*\.ssh/.test(code)) {
+    findings.push({
+      id: 'ATK-003',
+      severity: 'high',
+      title: 'Credential harvesting',
+      description: 'Env vars or .npmrc/SSH key access',
+      evidence: 'credential pattern match'
+    });
+  }
+  return findings;
+}
