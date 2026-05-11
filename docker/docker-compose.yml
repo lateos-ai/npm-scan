@@ -1,1 +1,56 @@
-version: '3.8'\nservices:\n  cli:\n    build:\n      context: ..\n      dockerfile: docker/Dockerfile.cli\n    image: ghcr.io/lateos/npm-scan:cli\n\n  # Full pipeline stubs (Phase 1+)\n  enumerator:\n    image: ghcr.io/lateos/npm-scan:enumerator\n  fetcher:\n    image: ghcr.io/lateos/npm-scan:fetcher\n    depends_on: [redis]\n  analyzer-static:\n    image: ghcr.io/lateos/npm-scan:analyzer\n  # ...\n\n  redis:\n    image: redis:alpine\n\n# Usage: docker compose up cli
+services:
+  cli:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.cli
+    image: ghcr.io/lateos/npm-scan:cli
+    profiles: [cli]
+    networks: [npm-scan-net]
+    volumes:
+      - npm-scan-data:/data
+    environment:
+      NPM_SCAN_DATA_DIR: /data
+    healthcheck:
+      test: ["CMD", "node", "-e", "console.log('ok')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  pipeline:
+    image: ghcr.io/lateos/npm-scan:cli
+    profiles: [pipeline]
+    networks: [npm-scan-net]
+    volumes:
+      - npm-scan-cache:/cache
+      - npm-scan-data:/data
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+      NPM_SCAN_QUEUE_URL: redis://redis:6379
+      NPM_SCAN_CACHE_DIR: /cache
+      NPM_SCAN_DATA_DIR: /data
+    command: ["node", "cli/pipeline.js"]
+
+  redis:
+    image: redis:alpine
+    networks: [npm-scan-net]
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    profiles: [pipeline]
+
+networks:
+  npm-scan-net:
+    driver: bridge
+
+volumes:
+  npm-scan-data:
+  npm-scan-cache:
+  redis-data:

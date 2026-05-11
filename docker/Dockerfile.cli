@@ -1,1 +1,14 @@
-FROM node:20-alpine AS cli\n\nWORKDIR /app\nCOPY package.json .\nRUN npm ci --only=production\nCOPY . .\n\nENTRYPOINT [\"node\", \"cli/cli.js\"]\n\n# Multi-arch build: docker buildx build --platform linux/amd64,linux/arm64 -t ghcr.io/lateos/npm-scan:cli .
+FROM node:20-alpine AS deps
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci --only=production
+
+FROM node:20-alpine
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/package.json ./package.json
+COPY --from=deps /app/package-lock.json ./package-lock.json
+COPY cli ./cli
+COPY backend ./backend
+ENV NODE_ENV=production
+ENTRYPOINT ["node", "cli/cli.js"]
