@@ -10,6 +10,11 @@ import { pipeline } from 'stream/promises';
 export async function fetchPackage(target) {
   const metaRes = await fetch(`https://registry.npmjs.org/${target}/latest`);
   const meta = await metaRes.json();
+
+  if (!metaRes.ok || !meta.dist?.tarball) {
+    throw new Error(`Package '${target}' not found on npm (${metaRes.status})`);
+  }
+
   const tarUrl = meta.dist.tarball;
   const tarRes = await fetch(tarUrl);
   const buffer = Buffer.from(await tarRes.arrayBuffer());
