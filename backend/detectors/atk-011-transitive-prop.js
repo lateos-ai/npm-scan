@@ -2,7 +2,7 @@ export async function scan(pkgJson, files = []) {
   const findings = [];
   const code = files.map(f => f.content).join('\n');
 
-const highPatterns = [
+  const highPatterns = [
     {
       pattern: /(?:exec|execSync|spawn)\s*\([^)]*npm\s+(?:install|link)\s*\./i,
       label: 'programmatic self-propagation via npm install/link'
@@ -18,10 +18,6 @@ const highPatterns = [
     {
       pattern: /fs\.(?:writeFile|writeFileSync)\s*\([^)]*\.\.\/[^)]*package\.json/i,
       label: 'writes modified package.json to sibling package'
-    },
-    {
-      pattern: /(?:exec|execSync|spawn)\s*\([^)]*npm\s+(?:install|link)\s+(?!\.)(?!http)(?!git)/i,
-      label: 'programmatic propagation via npm install of local package'
     },
     {
       pattern: /(?:exec|execSync|spawn)\s*\([^)]*(?:\.\.\/|process\.env\.INIT_CWD).*npm\s+install/i,
@@ -42,38 +38,33 @@ const highPatterns = [
     }
   }
 
-if (findings.length === 0) {
-    const selfName = pkgJson && pkgJson.name ? pkgJson.name.replace(/^@/, '').replace(/\//, '-') : null;
+  if (findings.length === 0) {
     const mediumPatterns = [
       {
         pattern: /process\.env\.npm_package_name/,
-        label: 'reads own package name (potential self-awareness for spread)'
+        label: 'reads own package name from env (self-awareness indicator)'
       },
       {
-        pattern: selfName ? new RegExp('require\\([\'"]' + selfName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '[\'"]\\)', 'i') : null,
-        label: selfName ? `require() of own package name "${selfName}"` : null
+        pattern: /fs\.symlink(?:Sync)?\s*\([^)]*node_modules/,
+        label: 'creates symlinks in node_modules (worm spreading mechanism)'
       },
       {
         pattern: /fs\.(?:mkdir|mkdirSync)\s*\([^)]*\.\.\/[^)]*node_modules/,
-        label: 'creates directories in parent node_modules structure'
+        label: 'creates directories in parent node_modules'
       },
       {
-        pattern: /fs\.symlink(?:Sync)?\s*\(/,
-        label: 'creates symlinks (potential worm link spreading)'
-      },
-      {
-        pattern: /__dirname.*node_modules/,
-        label: 'references own directory path in node_modules'
+        pattern: /__dirname.*\.\.\/[^/]+\/node_modules.*require\(/,
+        label: 'dynamic parent-node_modules require for lateral spread'
       },
     ];
 
-    for (const { pattern, label: mLabel } of mediumPatterns) {
-      if (pattern && pattern.test(code) && mLabel) {
+    for (const { pattern, label } of mediumPatterns) {
+      if (pattern.test(code)) {
         findings.push({
           id: 'ATK-011',
           severity: 'medium',
           title: 'Transitive propagation (worm)',
-          description: mLabel,
+          description: label,
           evidence: 'potential propagation indicator'
         });
         break;
