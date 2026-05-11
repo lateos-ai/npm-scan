@@ -3,6 +3,8 @@
 [![npm version](https://img.shields.io/npm/v/@lateos/npm-scan?style=flat-square)](https://www.npmjs.com/package/@lateos/npm-scan)
 [![License](https://img.shields.io/badge/license-Apache%202.0%20%2B%20Commons%20Clause-blue?style=flat-square)](LICENSING.md)
 [![Node](https://img.shields.io/badge/node-%3E%3D18-brightgreen?style=flat-square)](package.json)
+[![Tests](https://img.shields.io/badge/tests-222%20passing-brightgreen?style=flat-square)](https://github.com/lateos/npm-scan)
+[![Coverage](https://img.shields.io/badge/coverage-85%25-yellowgreen?style=flat-square)](https://github.com/lateos/npm-scan)
 
 **Modern supply chain security for the npm ecosystem.**  
 Static + behavioral analysis that catches what npm audit, Snyk, and Socket miss — obfuscated payloads, credential stealers, conditional triggers, sandbox evasion, and worm-like propagation.
@@ -258,23 +260,128 @@ npm-scan report --siem cef --license-key <key>
 
 ## 🔗 Integrations
 
-### GitHub Action
+### GitHub Actions CI (for this repo)
 
-Scan your lockfile on every PR. Add to `.github/workflows/scan.yml`:
+Every push and PR runs tests across Node 18, 20, and 22:
 
 ```yaml
+# .github/workflows/ci.yml
+name: CI
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18, 20, 22]
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    - run: npm ci
+    - run: npm test
+    - run: npm run test:coverage
+    - run: node --test test/detectors-corpus.test.js
+    - run: npm run lint
+    - run: npm run build
+```
+
+### GitHub Action (for downstream users)
+
+Scan your project's `package-lock.json` on every PR — detects typosquats, obfuscated payloads, credential harvesters, and worm propagation before they reach production:
+
+```yaml
+# .github/workflows/scan.yml
 name: npm-scan
-on: [pull_request]
+on:
+  pull_request:
+    paths:
+      - 'package-lock.json'
+      - '**/package.json'
 jobs:
   scan:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: lateos/npm-scan-action@v1
-        with:
-          lockfile: package-lock.json
-          policy: .npm-scan.yml       # optional
-          license-key: ${{ secrets.NPM_SCAN_LICENSE_KEY }}  # optional (premium)
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 20
+    - name: Scan lockfile
+      uses: lateos/npm-scan@main
+      with:
+        scan-type: lockfile
+        fail-on: high
+```
+
+#### Action inputs
+
+| Input | Default | Description |
+|-------|---------|-------------|
+| `scan-type` | `lockfile` | `lockfile` to scan `package-lock.json` or `package` to scan a specific npm package |
+| `package` | — | Package name (required when `scan-type=package`) |
+| `fail-on` | `high` | Fail the workflow at this severity threshold: `none`, `low`, `medium`, `high`, `critical` |
+| `policy-file` | — | Path to a YAML/JSON policy file for allowlists, severity overrides, and suppressions |
+| `license-key` | — | Premium license key for SIEM export and PDF reports |
+| `siem-format` | — | SIEM output: `cef`, `ecs`, `sentinel`, `qradar` (premium) |
+| `sbom-format` | — | SBOM output: `json`, `xml`, `spdx` |
+
+#### Action outputs
+
+| Output | Description |
+|--------|-------------|
+| `findings-count` | Number of findings detected |
+| `scan-id` | Scan ID for later reference in reports |
+
+#### Example: scan a specific package with policy + SBOM
+
+```yaml
+- uses: lateos/npm-scan@main
+  with:
+    scan-type: package
+    package: lodash
+    policy-file: .npm-scan.yml
+    sbom-format: spdx
+    fail-on: critical
+```
+
+#### Example: scan with SIEM export (premium)
+
+```yaml
+- uses: lateos/npm-scan@main
+  with:
+    scan-type: lockfile
+    siem-format: cef
+    license-key: ${{ secrets.NPM_SCAN_LICENSE_KEY }}
+```
+
+### CI/CD pipeline
+
+Integrate directly into your existing pipeline without the composite action:
+
+```bash
+# Scan lockfile, fail build on high severity
+npm-scan scan-lockfile --policy .npm-scan.yml || exit 1
+
+# Scan a specific package, fail on critical only
+npm-scan scan lodash --policy .npm-scan.yml || exit 1
+
+# Generate SBOM as a build artifact
+npm-scan scan express --sbom spdx > express-sbom.spdx.json
+
+# Generate HTML compliance report in CI
+npm-scan report --html > report.html
+
+# Upload report as an artifact
+# uses: actions/upload-artifact@v4
+#   with:
+#     name: npm-scan-report
+#     path: report.html
 ```
 
 ### Docker
@@ -293,12 +400,113 @@ docker compose --profile cli up -d
 
 Multi-arch images available for `linux/amd64` and `linux/arm64`.
 
-### CI/CD
+### GitHub Action (for downstream users)
+
+Scan your project's `package-lock.json` on every PR — detects typosquats, obfuscated payloads, credential harvesters, and worm propagation before they reach production:
+
+```yaml
+# .github/workflows/scan.yml
+name: npm-scan
+on:
+  pull_request:
+    paths:
+      - 'package-lock.json'
+      - '**/package.json'
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 20
+    - name: Scan lockfile
+      uses: lateos/npm-scan@main
+      with:
+        scan-type: lockfile
+        fail-on: high
+```
+
+#### Action inputs
+
+| Input | Default | Description |
+|-------|---------|-------------|
+| `scan-type` | `lockfile` | `lockfile` to scan `package-lock.json` or `package` to scan a specific npm package |
+| `package` | — | Package name (required when `scan-type=package`) |
+| `fail-on` | `high` | Fail the workflow at this severity threshold: `none`, `low`, `medium`, `high`, `critical` |
+| `policy-file` | — | Path to a YAML/JSON policy file for allowlists, severity overrides, and suppressions |
+| `license-key` | — | Premium license key for SIEM export and PDF reports |
+| `siem-format` | — | SIEM output: `cef`, `ecs`, `sentinel`, `qradar` (premium) |
+| `sbom-format` | — | SBOM output: `json`, `xml`, `spdx` |
+
+#### Action outputs
+
+| Output | Description |
+|--------|-------------|
+| `findings-count` | Number of findings detected |
+| `scan-id` | Scan ID for later reference in reports |
+
+#### Example: scan a specific package with policy + SBOM
+
+```yaml
+- uses: lateos/npm-scan@main
+  with:
+    scan-type: package
+    package: lodash
+    policy-file: .npm-scan.yml
+    sbom-format: spdx
+    fail-on: critical
+```
+
+#### Example: scan with SIEM export (premium)
+
+```yaml
+- uses: lateos/npm-scan@main
+  with:
+    scan-type: lockfile
+    siem-format: cef
+    license-key: ${{ secrets.NPM_SCAN_LICENSE_KEY }}
+```
+
+### CI/CD pipeline
+
+Integrate directly into your existing pipeline without the composite action:
 
 ```bash
-# Fail the build if critical findings exist
-npm-scan scan express --policy .npm-scan.yml || exit 1
+# Scan lockfile, fail build on high severity
+npm-scan scan-lockfile --policy .npm-scan.yml || exit 1
+
+# Scan a specific package, fail on critical only
+npm-scan scan lodash --policy .npm-scan.yml || exit 1
+
+# Generate SBOM as a build artifact
+npm-scan scan express --sbom spdx > express-sbom.spdx.json
+
+# Generate HTML compliance report in CI
+npm-scan report --html > report.html
+
+# Upload report as an artifact
+# uses: actions/upload-artifact@v4
+#   with:
+#     name: npm-scan-report
+#     path: report.html
 ```
+
+### Docker
+
+```bash
+# Pull and run
+docker pull ghcr.io/lateos/npm-scan:cli
+docker run --rm ghcr.io/lateos/npm-scan:cli scan lodash
+
+# Full pipeline with Compose (Redis-based queue)
+docker compose --profile pipeline up -d
+
+# CLI with persistent storage
+docker compose --profile cli up -d
+```
+
+Multi-arch images available for `linux/amd64` and `linux/arm64`.
 
 ---
 
@@ -343,11 +551,33 @@ See [`docs/attack-taxonomy.md`](docs/attack-taxonomy.md) for the ATK governance 
 3. False-positive analysis on top-500 npm packages
 4. NIST 800-161 control mapping
 
+### Testing
+
+The project uses the **Node.js native test runner** (`node:test` + `assert/strict`).
+
 ```bash
-git clone https://github.com/lateos/npm-scan.git
-npm install
+# Run all tests
 npm test
+
+# Run tests with coverage
+npm run test:coverage
+
+# Run tests with verbose spec output
+npm run test:verbose
+
+# Run local malicious/clean corpus (no network needed)
+node --test test/detectors-corpus.test.js
 ```
+
+**Test structure:**
+- `test/fixtures/mock-data.js` — shared mock scans, packages, and code snippets
+- `test/db.test.js` — database CRUD (save, query, persist)
+- `test/detectors-edge-cases.test.js` — per-detector boundary tests (no-ops, clean clears, severity)
+- `test/detectors-corpus.test.js` — 33 malicious + 50 clean tarball integration (offline)
+- `test/fetch.test.js` — tarball extraction, temp directory cleanup
+- `test/policy-edge-cases.test.js` — edge cases in suppress, override, load validation
+- `test/report-snapshots.test.js` — HTML/text/CRA/PDF format assertions
+- `test/cli.test.js` — commander integration tests (help, version, scan, report, error handling)
 
 ### Need help?
 

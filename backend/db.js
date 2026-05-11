@@ -84,5 +84,6 @@ export async function close() {
     persist();
     db.close();
     db = null;
+    initPromise = null;
   }
 }

@@ -1,1 +1,28 @@
-name: npm-scan\n\non: [pull_request]\n\njobs:\n  scan:\n    runs-on: ubuntu-latest\n    steps:\n    - uses: actions/checkout@v4\n    - uses: actions/setup-node@v4\n      with:\n        node-version: 20\n    - run: npm ci\n    - run: npx @lateos/npm-scan@latest scan-lockfile\n      # Or: npm-scan scan-lockfile (if global)\n    # Fail PR on high/critical
+name: npm-scan PR check
+
+on:
+  pull_request:
+    paths:
+      - 'package-lock.json'
+      - '**/package.json'
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 20
+    - name: Scan lockfile for supply chain threats
+      uses: lateos/npm-scan@main
+      with:
+        scan-type: lockfile
+        fail-on: high
+        policy-file: .npm-scan.yml
+    - name: Upload scan results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: npm-scan-results
+        path: npm-scan.db

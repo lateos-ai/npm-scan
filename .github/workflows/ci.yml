@@ -1,1 +1,45 @@
-name: CI\n\non:\n  push:\n    branches: [ main ]\n  pull_request:\n    branches: [ main ]\n\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n    - uses: actions/checkout@v4\n    - uses: actions/setup-node@v4\n      with:\n        node-version: '20'\n        cache: 'npm'\n    - run: npm ci\n    - run: npm run lint\n    - run: npm run test\n    - run: npm run build\n    # Self-scan stub\n    - run: echo 'Self-scan: npm run scan package.json' # Phase 1+
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18, 20, 22]
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    - run: npm ci
+    - name: Run tests
+      run: npm test
+    - name: Run tests with coverage
+      run: npm run test:coverage
+    - name: Run local corpus tests
+      run: node --test test/detectors-corpus.test.js
+    - name: Lint check
+      run: npm run lint
+    - name: Build check
+      run: npm run build
+
+  scan-self:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 20
+    - name: Self-scan lockfile
+      uses: ./
+      with:
+        scan-type: lockfile
+        fail-on: high
