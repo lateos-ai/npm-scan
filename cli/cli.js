@@ -15,7 +15,7 @@ function requirePremium(feature, licenseKey) {
 const program = new Command()
   .name('npm-scan')
   .description('npm supply chain security scanner')
-  .version('0.5.0');
+  .version('0.8.0');
 
 program
   .command('scan')
