@@ -83,14 +83,17 @@ program
   });
 
 program
-  .command('report')
+.command('report')
   .description('Generate report')
   .option('-i, --id <id>', 'Scan ID')
   .option('--sbom [format]', 'SBOM format (json/xml/spdx)')
   .option('--html', 'HTML report')
+  .option('--text', 'Plain text report')
   .option('--nist', 'NIST 800-161 compliance report')
   .option('--cra', 'EU CRA compliance report')
   .option('--siem <format>', 'SIEM format (cef|ecs|sentinel|qradar)')
+  .option('--pdf', 'PDF report (premium)')
+  .option('-o, --output <path>', 'Output file path')
   .option('-l, --license-key <key>', 'Premium license')
   .action(async (options) => {
     const licenseKey = options.licenseKey || process.env.NPM_SCAN_LICENSE_KEY;
@@ -112,6 +115,16 @@ program
         requirePremium('cra', licenseKey);
         const { generateCRA } = await import('../backend/cra.js');
         console.log(generateCRA(scan ? [scan] : []));
+      } else if (options.pdf) {
+        requirePremium('nist-pdf', licenseKey);
+        const { generatePDF } = await import('../backend/pdf.js');
+        const pdfBytes = await generatePDF(scan ? [scan] : []);
+        const outPath = options.output || `${pkgName}-${options.id}-report.pdf`;
+        await import('fs').then(m => m.writeFileSync(outPath, pdfBytes));
+        console.log(`PDF report written to ${outPath}`);
+      } else if (options.text) {
+        const { generateText } = await import('../backend/report.js');
+        console.log(generateText(scan ? [scan] : []));
       } else if (options.sbom) {
         const { generateSBOM } = await import('../backend/sbom.js');
         const sbom = generateSBOM(pkg, findings, options.sbom === true ? 'json' : options.sbom);
@@ -135,6 +148,17 @@ program
         requirePremium('cra', licenseKey);
         const { generateCRA } = await import('../backend/cra.js');
         console.log(generateCRA(scansWithFindings));
+      } else if (options.pdf) {
+        requirePremium('nist-pdf', licenseKey);
+        const { generatePDF } = await import('../backend/pdf.js');
+        const pdfBytes = await generatePDF(scansWithFindings);
+        const date = new Date().toISOString().slice(0, 10);
+        const outPath = options.output || `npm-scan-report-${date}.pdf`;
+        await import('fs').then(m => m.writeFileSync(outPath, pdfBytes));
+        console.log(`PDF report written to ${outPath}`);
+      } else if (options.text) {
+        const { generateText } = await import('../backend/report.js');
+        console.log(generateText(scansWithFindings));
       } else if (options.html || options.nist) {
         const { generateHTML } = await import('../backend/report.js');
         const html = generateHTML(scansWithFindings);

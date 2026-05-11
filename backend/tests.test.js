@@ -451,3 +451,85 @@ test('policy loadPolicy rejects suppress without atk_id', async () => {
     unlinkSync(path);
   }
 });
+
+// ─── Text Report ────────────────────────────────────────────────────
+
+test('text report generates basic output', async () => {
+  const { generateText } = await import('./report.js');
+  const out = generateText(MOCK_SCANS);
+  assert(out.includes('npm-scan Report'), 'header');
+  assert(out.includes('Packages scanned: 1'), 'scan count');
+  assert(out.includes('lodash'), 'package name');
+  assert(out.includes('ATK-003'), 'ATK-003 finding');
+  assert(out.includes('ATK-009'), 'ATK-009 finding');
+  assert(out.includes('Severity Summary'), 'summary');
+  assert(out.includes('total: 2 findings'), 'total count');
+});
+
+test('text report empty scans', async () => {
+  const { generateText } = await import('./report.js');
+  const out = generateText([]);
+  assert(out.includes('Packages scanned: 0'), 'zero scans');
+  assert(out.includes('total: 0 findings'), 'zero findings');
+});
+
+test('text report clean package', async () => {
+  const { generateText } = await import('./report.js');
+  const scans = [{ package_name: 'clean-pkg', version: '1.0.0', findings: [] }];
+  const out = generateText(scans);
+  assert(out.includes('clean-pkg@1.0.0'), 'package name');
+  assert(out.includes('clean'), 'clean label');
+  assert(out.includes('0 findings'), 'zero findings');
+});
+
+test('text report severity counts', async () => {
+  const { generateText } = await import('./report.js');
+  const scans = [{
+    package_name: 'multi-sev', version: '1.0.0', findings: [
+      { id: 'ATK-001', severity: 'critical', title: 'C' },
+      { id: 'ATK-002', severity: 'high', title: 'H' },
+      { id: 'ATK-003', severity: 'medium', title: 'M' },
+      { id: 'ATK-004', severity: 'low', title: 'L' },
+    ],
+  }];
+  const out = generateText(scans);
+  assert(out.includes('critical: 1'), 'critical count');
+  assert(out.includes('high: 1'), 'high count');
+  assert(out.includes('medium: 1'), 'medium count');
+  assert(out.includes('low: 1'), 'low count');
+  assert(out.includes('ATK-001'), 'ATK-001 present');
+});
+
+// ─── PDF Report ─────────────────────────────────────────────────────
+
+test('PDF report generates valid PDF buffer', async () => {
+  const { generatePDF } = await import('./pdf.js');
+  const pdfBytes = await generatePDF(MOCK_SCANS);
+  assert(pdfBytes instanceof Uint8Array, 'Uint8Array buffer');
+  const header = new TextDecoder().decode(pdfBytes.slice(0, 8));
+  assert(header.startsWith('%PDF-'), 'PDF header magic bytes');
+  assert(header.includes('1.'), 'PDF version');
+});
+
+test('PDF report with findings produces valid multi-page PDF', async () => {
+  const { generatePDF } = await import('./pdf.js');
+  const pdfBytes = await generatePDF(MOCK_SCANS);
+  const header = new TextDecoder().decode(pdfBytes.slice(0, 8));
+  assert(header.startsWith('%PDF-'), 'valid PDF header');
+  assert(pdfBytes.length > 1000, 'non-trivial PDF size');
+});
+
+test('PDF report with empty scans produces valid PDF', async () => {
+  const { generatePDF } = await import('./pdf.js');
+  const pdfBytes = await generatePDF([]);
+  const header = new TextDecoder().decode(pdfBytes.slice(0, 8));
+  assert(header.startsWith('%PDF-'), 'valid PDF with empty scans');
+});
+
+test('PDF report with no findings still valid', async () => {
+  const { generatePDF } = await import('./pdf.js');
+  const scans = [{ package_name: 'clean-pkg', version: '1.0.0', findings: [] }];
+  const pdfBytes = await generatePDF(scans);
+  const header = new TextDecoder().decode(pdfBytes.slice(0, 8));
+  assert(header.startsWith('%PDF-'), 'valid PDF with clean package');
+});

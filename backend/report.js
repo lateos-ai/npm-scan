@@ -96,6 +96,51 @@ const NIST_SR_MAP = {
   'ATK-011': { control: 'SR-11.4', title: 'Supply chain propagation monitoring' },
 };
 
+export function generateText(scans) {
+  const lines = [];
+  lines.push('npm-scan Report');
+  lines.push('================');
+  lines.push(`Generated: ${new Date().toISOString()}`);
+  lines.push(`Packages scanned: ${scans.length}`);
+  lines.push('');
+
+  let totalFindings = 0;
+  const sevMap = { critical: 5, high: 4, medium: 3, low: 2, info: 1 };
+
+  const sevCounts = { critical: 0, high: 0, medium: 0, low: 0, info: 0 };
+  const sevLabel = ['', 'info', 'low', 'medium', 'high', 'critical'];
+
+  for (const s of scans) {
+    const findings = s.findings || [];
+    totalFindings += findings.length;
+
+    const worst = findings.reduce((m, f) => Math.max(m, sevMap[f.severity] || 0), 0);
+    const worstLabel = sevLabel[worst] || 'clean';
+
+    lines.push(`${s.package_name}@${s.version || 'unknown'} \u2500\u2500 ${findings.length} findings (worst: ${worstLabel})`);
+
+    for (const f of findings) {
+      const desc = (f.description || f.title || '').slice(0, 80);
+      sevCounts[f.severity] = (sevCounts[f.severity] || 0) + 1;
+      lines.push(`  ${f.atk_id || f.id}  ${f.severity.padEnd(8)} ${desc}`);
+    }
+
+    if (!findings.length) {
+      lines.push(`  (clean \u2014 no findings)`);
+    }
+    lines.push('');
+  }
+
+  lines.push('--- Severity Summary ---');
+  for (const sev of ['critical', 'high', 'medium', 'low']) {
+    lines.push(`  ${sev}: ${sevCounts[sev] || 0}`);
+  }
+  lines.push(`  total: ${totalFindings} findings across ${scans.length} packages`);
+  lines.push('');
+
+  return lines.join('\n');
+}
+
 function generateNistTable(scans) {
   const atkMap = getAtkFindings(scans);
   let rows = '';
