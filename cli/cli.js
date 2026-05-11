@@ -15,7 +15,7 @@ function requirePremium(feature, licenseKey) {
 const program = new Command()
   .name('npm-scan')
   .description('npm supply chain security scanner')
-  .version('0.8.0');
+  .version('0.9.0');
 
 program
   .command('scan')
@@ -41,7 +41,7 @@ program
       const { pkgJson, jsFiles, tmpDir } = await import('../backend/fetch.js').then(m => m.fetchPackage(target));
       const findings = await import('../backend/detectors/index.js').then(m => m.runAll(pkgJson, jsFiles));
       const { saveScan } = await import('../backend/db.js');
-      const scanId = saveScan(target, 'latest', findings);
+      const scanId = await saveScan(target, 'latest', findings);
 
       let outputFindings = findings;
       let blocked = false;
@@ -100,8 +100,8 @@ program
     const { getRecentScans, getFindings, getScan } = await import('../backend/db.js');
 
     if (options.id) {
-      const findings = getFindings(options.id);
-      const scanInfo = getScan(options.id);
+      const findings = await getFindings(options.id);
+      const scanInfo = await getScan(options.id);
       const pkgName = scanInfo?.package_name || 'scan-' + options.id;
       const pkgVer = scanInfo?.version || 'unknown';
       const pkg = { name: pkgName, version: pkgVer };
@@ -137,8 +137,8 @@ program
         console.log(JSON.stringify(findings, null, 2));
       }
     } else {
-      const scans = getRecentScans();
-      const scansWithFindings = scans.map(s => ({ ...s, findings: getFindings(s.id) }));
+      const scans = await getRecentScans();
+      const scansWithFindings = await Promise.all(scans.map(async s => ({ ...s, findings: await getFindings(s.id) })));
 
       if (options.siem) {
         requirePremium('siem', licenseKey);
