@@ -23,24 +23,54 @@ program
   .argument('<target>', 'package name')
   .option('-l, --license-key <key>', 'Premium license')
   .option('--sbom [format]', 'Generate SBOM (json/xml/spdx)')
+  .option('-p, --policy <path>', 'Policy file (YAML/JSON)')
   .action(async (target, options) => {
     try {
+      const policy = options.policy
+        ? await import('../backend/policy.js').then(m => m.loadPolicy(options.policy))
+        : null;
+
+      if (policy) {
+        const { isAllowed } = await import('../backend/policy.js');
+        if (isAllowed(target, policy)) {
+          console.log(JSON.stringify({ scanId: null, findings: [], skipped: true, reason: `Package '${target}' is in policy allowlist` }));
+          return;
+        }
+      }
+
       const { pkgJson, jsFiles, tmpDir } = await import('../backend/fetch.js').then(m => m.fetchPackage(target));
       const findings = await import('../backend/detectors/index.js').then(m => m.runAll(pkgJson, jsFiles));
       const { saveScan } = await import('../backend/db.js');
       const scanId = saveScan(target, 'latest', findings);
 
+      let outputFindings = findings;
+      let blocked = false;
+
+      if (policy) {
+        const { applyPolicy } = await import('../backend/policy.js');
+        const result = applyPolicy(findings, target, policy);
+        outputFindings = result.findings;
+        blocked = result.blocked;
+      }
+
       if (options.sbom) {
         const { generateSBOM } = await import('../backend/sbom.js');
-        const sbom = generateSBOM(pkgJson, findings, options.sbom === true ? 'json' : options.sbom);
+        const pkg = { name: target, version: pkgJson.version || 'latest' };
+        const sbom = generateSBOM(pkg, outputFindings, options.sbom === true ? 'json' : options.sbom);
         console.log(sbom);
       } else {
-        console.log(JSON.stringify({scanId, findings}, null, 2));
+        console.log(JSON.stringify({scanId, findings: outputFindings, blocked}, null, 2));
+      }
+
+      if (blocked) {
+        console.error('Policy: scan blocked due to fail_on threshold');
+        process.exit(1);
       }
 
       import('../backend/fetch.js').then(m => m.cleanup(tmpDir));
     } catch (e) {
       console.error(e.message);
+      process.exit(1);
     }
   });
 

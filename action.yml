@@ -14,6 +14,9 @@ inputs:
     description: 'Fail the workflow on findings at this severity or higher (none, low, medium, high, critical)'
     default: 'high'
     required: false
+  policy-file:
+    description: 'Path to a YAML/JSON policy file (allowlist, severity overrides, suppressions)'
+    required: false
   license-key:
     description: 'Premium license key for advanced features'
     required: false
@@ -50,10 +53,14 @@ runs:
         NPM_SCAN_LICENSE_KEY: ${{ inputs.license-key || '' }}
       run: |
         set -euo pipefail
+        POLICY_FLAG=""
+        if [[ -n "${{ inputs.policy-file }}" ]]; then
+          POLICY_FLAG=" --policy ${{ inputs.policy-file }}"
+        fi
         if [[ "${{ inputs.scan-type }}" == "package" && -n "${{ inputs.package }}" ]]; then
-          output=$(npm-scan scan "${{ inputs.package }}" 2>&1)
+          output=$(npm-scan scan "${{ inputs.package }}"$POLICY_FLAG 2>&1)
         else
-          output=$(npm-scan scan-lockfile 2>&1)
+          output=$(npm-scan scan-lockfile$POLICY_FLAG 2>&1)
         fi
         echo "$output"
 

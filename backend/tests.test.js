@@ -292,3 +292,162 @@ test('NIST table maps all ATK-001 through ATK-011', async () => {
   assert(html.includes('SR-3.1'), 'SR-3.1 for ATK-001');
   assert(html.includes('SR-11.4'), 'SR-11.4 for ATK-011');
 });
+
+// ─── Policy Engine ──────────────────────────────────────────────────
+
+test('policy loadPolicy loads YAML', async () => {
+  const { loadPolicy } = await import('./policy.js');
+  const { writeFileSync, unlinkSync } = await import('fs');
+  const path = '/tmp/test-policy.yaml';
+  writeFileSync(path, `fail_on: medium\nallow:\n  packages:\n    - lodash\n`);
+  try {
+    const policy = loadPolicy(path);
+    assert.equal(policy.fail_on, 'medium');
+    assert.deepEqual(policy.allow.packages, ['lodash']);
+  } finally {
+    unlinkSync(path);
+  }
+});
+
+test('policy loadPolicy loads JSON', async () => {
+  const { loadPolicy } = await import('./policy.js');
+  const { writeFileSync, unlinkSync } = await import('fs');
+  const path = '/tmp/test-policy.json';
+  writeFileSync(path, `{"fail_on":"high","allow":{"packages":["chalk"]}}`);
+  try {
+    const policy = loadPolicy(path);
+    assert.equal(policy.fail_on, 'high');
+    assert.deepEqual(policy.allow.packages, ['chalk']);
+  } finally {
+    unlinkSync(path);
+  }
+});
+
+test('policy isAllowed matches package name', async () => {
+  const { isAllowed } = await import('./policy.js');
+  const policy = { allow: { packages: ['lodash', 'chalk@5.0.0'] }, severity_overrides: {}, fail_on: 'none', suppress: [] };
+  assert.equal(isAllowed('lodash', policy), true);
+  assert.equal(isAllowed('lodash@4.17.21', policy), true);
+  assert.equal(isAllowed('chalk@5.0.0', policy), true);
+  assert.equal(isAllowed('express', policy), false);
+});
+
+test('policy isAllowed with empty allowlist', async () => {
+  const { isAllowed } = await import('./policy.js');
+  const policy = { allow: { packages: [] }, severity_overrides: {}, fail_on: 'none', suppress: [] };
+  assert.equal(isAllowed('lodash', policy), false);
+});
+
+test('policy applyPolicy suppresses findings by atk_id', async () => {
+  const { applyPolicy } = await import('./policy.js');
+  const findings = [
+    { id: 'ATK-003', atk_id: 'ATK-003', severity: 'high', title: 'Creds' },
+    { id: 'ATK-009', atk_id: 'ATK-009', severity: 'medium', title: 'Trigger' },
+  ];
+  const policy = { allow: { packages: [] }, severity_overrides: {}, fail_on: 'none', suppress: [{ atk_id: 'ATK-003', package: '*', reason: 'FP' }] };
+  const { findings: filtered } = applyPolicy(findings, 'lodash', policy);
+  assert.equal(filtered.length, 1);
+  assert.equal(filtered[0].id, 'ATK-009');
+});
+
+test('policy applyPolicy suppresses findings by package name', async () => {
+  const { applyPolicy } = await import('./policy.js');
+  const findings = [
+    { id: 'ATK-001', atk_id: 'ATK-001', severity: 'low', title: 'Lifecycle' },
+  ];
+  const policy = { allow: { packages: [] }, severity_overrides: {}, fail_on: 'none', suppress: [{ atk_id: 'ATK-001', package: 'lodash', reason: 'Fixture' }] };
+  const { findings: filtered } = applyPolicy(findings, 'lodash', policy);
+  assert.equal(filtered.length, 0);
+});
+
+test('policy applyPolicy preserves findings when suppress rule targets different package', async () => {
+  const { applyPolicy } = await import('./policy.js');
+  const findings = [
+    { id: 'ATK-001', atk_id: 'ATK-001', severity: 'low', title: 'Lifecycle' },
+  ];
+  const policy = { allow: { packages: [] }, severity_overrides: {}, fail_on: 'none', suppress: [{ atk_id: 'ATK-001', package: 'express', reason: 'Fixture' }] };
+  const { findings: filtered } = applyPolicy(findings, 'lodash', policy);
+  assert.equal(filtered.length, 1);
+});
+
+test('policy applyPolicy overrides severity', async () => {
+  const { applyPolicy } = await import('./policy.js');
+  const findings = [
+    { id: 'ATK-003', atk_id: 'ATK-003', severity: 'high', title: 'Creds' },
+  ];
+  const policy = { allow: { packages: [] }, severity_overrides: { 'ATK-003': 'low' }, fail_on: 'none', suppress: [] };
+  const { findings: filtered } = applyPolicy(findings, 'lodash', policy);
+  assert.equal(filtered[0].severity, 'low');
+  assert.equal(filtered[0]._severityOverridden, true);
+});
+
+test('policy checkFailOn blocks at threshold', async () => {
+  const { applyPolicy } = await import('./policy.js');
+  const findings = [
+    { id: 'ATK-001', atk_id: 'ATK-001', severity: 'medium', title: 'Test' },
+  ];
+  const policy = { allow: { packages: [] }, severity_overrides: {}, fail_on: 'high', suppress: [] };
+  const { blocked } = applyPolicy(findings, 'test', policy);
+  assert.equal(blocked, false);
+  const policyLow = { allow: { packages: [] }, severity_overrides: {}, fail_on: 'medium', suppress: [] };
+  const { blocked: b2 } = applyPolicy(findings, 'test', policyLow);
+  assert.equal(b2, true);
+});
+
+test('policy checkFailOn none never blocks', async () => {
+  const { applyPolicy } = await import('./policy.js');
+  const findings = [
+    { id: 'ATK-001', atk_id: 'ATK-001', severity: 'critical', title: 'Critical' },
+  ];
+  const policy = { allow: { packages: [] }, severity_overrides: {}, fail_on: 'none', suppress: [] };
+  const { blocked } = applyPolicy(findings, 'test', policy);
+  assert.equal(blocked, false);
+});
+
+test('policy loadPolicy rejects invalid YAML', async () => {
+  const { loadPolicy } = await import('./policy.js');
+  const { writeFileSync, unlinkSync } = await import('fs');
+  const path = '/tmp/test-bad.yaml';
+  writeFileSync(path, 'fail_on: [invalid');
+  try {
+    assert.throws(() => loadPolicy(path), /YAML|load/i);
+  } finally {
+    unlinkSync(path);
+  }
+});
+
+test('policy loadPolicy rejects invalid fail_on severity', async () => {
+  const { loadPolicy } = await import('./policy.js');
+  const { writeFileSync, unlinkSync } = await import('fs');
+  const path = '/tmp/test-bad-failon.yaml';
+  writeFileSync(path, 'fail_on: extreme');
+  try {
+    assert.throws(() => loadPolicy(path), /Invalid.*fail_on/i);
+  } finally {
+    unlinkSync(path);
+  }
+});
+
+test('policy loadPolicy rejects invalid severity override', async () => {
+  const { loadPolicy } = await import('./policy.js');
+  const { writeFileSync, unlinkSync } = await import('fs');
+  const path = '/tmp/test-bad-override.yaml';
+  writeFileSync(path, 'severity_overrides:\n  ATK-001: ultra');
+  try {
+    assert.throws(() => loadPolicy(path), /Invalid severity/i);
+  } finally {
+    unlinkSync(path);
+  }
+});
+
+test('policy loadPolicy rejects suppress without atk_id', async () => {
+  const { loadPolicy } = await import('./policy.js');
+  const { writeFileSync, unlinkSync } = await import('fs');
+  const path = '/tmp/test-bad-suppress.yaml';
+  writeFileSync(path, 'suppress:\n  - package: lodash');
+  try {
+    assert.throws(() => loadPolicy(path), /atk_id/i);
+  } finally {
+    unlinkSync(path);
+  }
+});
