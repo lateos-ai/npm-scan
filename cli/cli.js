@@ -27,6 +27,7 @@ program
   .option('-p, --policy <path>', 'Policy file (YAML/JSON)')
   .option('--fail-on <level>', 'Exit with code 1 if findings >= level (low|medium|high|critical)', 'none')
   .option('--sarif [file]', 'Output SARIF v2.1 format to file or stdout')
+  .option('--csv [file]', 'Output CSV format to file or stdout')
   .action(async (target, options) => {
     try {
       if (!target && !options.file) {
@@ -75,6 +76,17 @@ program
           writeFileSync(options.sarif, sarifOutput);
           console.log(`SARIF output written to ${options.sarif}`);
         }
+      } else if (options.csv) {
+        const { generateCSV } = await import('../backend/report.js');
+        const scan = { package_name: pkgName, version: pkgJson.version || 'latest', findings: outputFindings };
+        const csvOutput = generateCSV([scan]);
+        if (options.csv === true || !options.csv) {
+          console.log(csvOutput);
+        } else {
+          const { writeFileSync } = await import('fs');
+          writeFileSync(options.csv, csvOutput);
+          console.log(`CSV output written to ${options.csv}`);
+        }
       } else if (options.sbom) {
         const { generateSBOM } = await import('../backend/sbom.js');
         const pkg = { name: pkgName, version: pkgJson.version || 'latest' };
@@ -111,6 +123,8 @@ program
   .description('Scan package-lock.json')
   .option('-f, --file <path>', 'lockfile path', 'package-lock.json')
   .option('--fail-on <level>', 'Exit with code 1 if findings >= level (low|medium|high|critical)', 'none')
+  .option('--csv [file]', 'Output CSV format to file or stdout')
+  .option('--sarif [file]', 'Output SARIF v2.1 format to file or stdout')
   .action((options) => {
     console.log('Scanning lockfile:', options.file);
   });
@@ -122,6 +136,7 @@ program
   .option('--sbom [format]', 'SBOM format (json/xml/spdx)')
   .option('--html', 'HTML report')
   .option('--text', 'Plain text report')
+  .option('--csv [file]', 'CSV export to file or stdout')
   .option('--nist', 'NIST 800-161 compliance report')
   .option('--cra', 'EU CRA compliance report')
   .option('--siem <format>', 'SIEM format (cef|ecs|sentinel|qradar)')

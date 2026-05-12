@@ -165,6 +165,10 @@ npm-scan report -i 42 --nist
 # EU-CRA-Compliance-Tabelle ausgeben
 npm-scan report --cra
 
+# CSV-Export für Excel / Sheets (audit-bereit)
+npm-scan report --csv risks.csv
+npm-scan scan lodash --csv          # CSV nach stdout
+
 # Textbericht (kostenlos)
 npm-scan report --text
 

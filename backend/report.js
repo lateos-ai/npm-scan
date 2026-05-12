@@ -198,3 +198,19 @@ export function generateSARIF(scan, format = 'json') {
 
   return format === 'pretty' ? JSON.stringify(sarif, null, 2) : JSON.stringify(sarif);
 }
+
+export function generateCSV(scans) {
+  const headers = 'id,severity,title,description,evidence,package_name,version\n';
+  const rows = (scans || []).flatMap(s => 
+    (s.findings || []).map(f => [
+      f.id,
+      f.severity || '',
+      (f.title || '').replace(/,/g, ';'),
+      (f.description || '').replace(/,/g, ';'),
+      (f.evidence || '').replace(/,/g, ';'),
+      s.package_name || '',
+      s.version || ''
+    ].join(','))
+  ).join('\n');
+  return headers + rows;
+}

@@ -165,6 +165,10 @@ npm-scan report -i 42 --nist
 # 打印 EU CRA 合规表格
 npm-scan report --cra
 
+# CSV 导出用于 Excel / Sheets（审计就绪）
+npm-scan report --csv risks.csv
+npm-scan scan lodash --csv          # CSV 输出到标准输出
+
 # 文本报告（免费）
 npm-scan report --text
 
