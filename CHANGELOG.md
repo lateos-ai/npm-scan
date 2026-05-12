@@ -4,6 +4,16 @@ All notable changes to [@lateos/npm-scan](https://github.com/lateos-ai/npm-scan)
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- `scan --file <path>` flag to analyze local `.tgz` tarballs without fetching from npm registry
+
+## [Unreleased]
+
+### Added
+- `scan --file <path>` flag to analyze local `.tgz` tarballs without fetching from npm registry
+
 ## [0.9.7] — 2026-05-12
 
 - Sigstore provenance attestation on every publish via new GitHub Actions workflow

@@ -123,6 +123,9 @@ npm-scan scan express --sbom spdx        # SPDX 2.3
 
 # 应用 YAML 策略
 npm-scan scan some-package --policy .npm-scan.yml
+
+# 扫描本地 tarball（无需从注册表获取）
+npm-scan scan --file path/to/malicious-package.tgz
 ```
 
 ### 扫描锁定文件

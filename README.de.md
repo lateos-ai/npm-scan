@@ -123,6 +123,9 @@ npm-scan scan express --sbom spdx        # SPDX 2.3
 
 # Eine YAML-Policy anwenden
 npm-scan scan some-package --policy .npm-scan.yml
+
+# Lokales Tarball scannen (kein Registry-Abruf nötig)
+npm-scan scan --file path/to/malicious-package.tgz
 ```
 
 ### Eine Lock-Datei scannen

@@ -123,6 +123,9 @@ npm-scan scan express --sbom spdx        # SPDX 2.3
 
 # Appliquer une politique YAML
 npm-scan scan some-package --policy .npm-scan.yml
+
+# Scanner un fichier tarball local (pas de téléchargement depuis le registre)
+npm-scan scan --file path/to/malicious-package.tgz
 ```
 
 ### Scanner un fichier de verrouillage

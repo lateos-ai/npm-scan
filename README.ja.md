@@ -123,6 +123,9 @@ npm-scan scan express --sbom spdx        # SPDX 2.3
 
 # YAMLポリシーを適用
 npm-scan scan some-package --policy .npm-scan.yml
+
+# ローカルtarballをスキャン（レジストリからの取得不要）
+npm-scan scan --file path/to/malicious-package.tgz
 ```
 
 ### ロックファイルのスキャン
