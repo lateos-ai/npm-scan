@@ -1,16 +1,16 @@
 # @lateos/npm-scan
 
-[![English](https://img.shields.io/badge/lang-en-blue?style=flat-square)](https://github.com/lateos/npm-scan/blob/main/README.md)
-[![中文](https://img.shields.io/badge/lang-zh--CN-red?style=flat-square)](https://github.com/lateos/npm-scan/blob/main/README.zh.md)
-[![日本語](https://img.shields.io/badge/lang-ja-purple?style=flat-square)](https://github.com/lateos/npm-scan/blob/main/README.ja.md)
-[![Français](https://img.shields.io/badge/lang-fr-orange?style=flat-square)](https://github.com/lateos/npm-scan/blob/main/README.fr.md)
-[![Deutsch](https://img.shields.io/badge/lang-de-green?style=flat-square)](https://github.com/lateos/npm-scan/blob/main/README.de.md)
+[![English](https://img.shields.io/badge/lang-en-blue?style=flat-square)](https://github.com/lateos-ai/npm-scan/blob/main/README.md)
+[![中文](https://img.shields.io/badge/lang-zh--CN-red?style=flat-square)](https://github.com/lateos-ai/npm-scan/blob/main/README.zh.md)
+[![日本語](https://img.shields.io/badge/lang-ja-purple?style=flat-square)](https://github.com/lateos-ai/npm-scan/blob/main/README.ja.md)
+[![Français](https://img.shields.io/badge/lang-fr-orange?style=flat-square)](https://github.com/lateos-ai/npm-scan/blob/main/README.fr.md)
+[![Deutsch](https://img.shields.io/badge/lang-de-green?style=flat-square)](https://github.com/lateos-ai/npm-scan/blob/main/README.de.md)
 
 [![npm version](https://img.shields.io/npm/v/@lateos/npm-scan?style=flat-square)](https://www.npmjs.com/package/@lateos/npm-scan)
 [![License](https://img.shields.io/badge/license-Apache%202.0%20%2B%20Commons%20Clause-blue?style=flat-square)](LICENSING.md)
 [![Node](https://img.shields.io/badge/node-%3E%3D18-brightgreen?style=flat-square)](package.json)
-[![Tests](https://img.shields.io/badge/tests-222%20passing-brightgreen?style=flat-square)](https://github.com/lateos/npm-scan)
-[![Coverage](https://img.shields.io/badge/coverage-85%25-yellowgreen?style=flat-square)](https://github.com/lateos/npm-scan)
+[![Tests](https://img.shields.io/badge/tests-222%20passing-brightgreen?style=flat-square)](https://github.com/lateos-ai/npm-scan)
+[![Coverage](https://img.shields.io/badge/coverage-85%25-yellowgreen?style=flat-square)](https://github.com/lateos-ai/npm-scan)
 
 **适用于 npm 生态系统的现代供应链安全工具。**  
 静态 + 行为分析，捕获 npm audit、Snyk 和 Socket 遗漏的威胁——混淆载荷、凭证窃取器、条件触发器、沙箱逃逸以及蠕虫式传播。
