@@ -30,8 +30,10 @@ Run `npm test` (222 tests), `npm run test:coverage` (85%+), `npm run lint`, `npm
 - `docker/`: Multi-arch Docker images (cli, pipeline)
 
 ## Publishing
-- Bump version: `npm version patch --no-git-tag-version`
-- Publish: `npm publish --access public`
+- Bump version: `npm version patch && git push origin main --tags`
+- GitHub Actions auto-publishes via `.github/workflows/publish.yml` with Sigstore provenance attestation (on tag push `v*.*.*`)
+- Requires `NPM_TOKEN` secret in GitHub repo (granular access token with read-and-publish scope for `@lateos/npm-scan`)
+- Manual fallback: `npm publish --access public` (no provenance when publishing locally)
 - Remote: `backup` → `/Volumes/Untitled/npm-scan.git` (FAT32 thumb drive)
 
 ## Conventions
