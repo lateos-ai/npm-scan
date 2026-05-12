@@ -145,6 +145,9 @@ npm-scan scan-lockfile --fail-on low
 
 # 生成 SARIF v2.1 输出，用于 GitHub Advanced Security / VS Code
 npm-scan scan-lockfile --sarif results.sarif
+
+# 仅输出风险分数（0-10）用于仪表板/阈值
+npm-scan scan-lockfile --score-only
 ```
 
 ### 生成报告

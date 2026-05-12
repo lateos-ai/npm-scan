@@ -145,6 +145,9 @@ npm-scan scan-lockfile --fail-on low
 
 # SARIF v2.1-Ausgabe für GitHub Advanced Security / VS Code generieren
 npm-scan scan-lockfile --sarif results.sarif
+
+# Nur Risiko-Score ausgeben (0-10) für Dashboards/Schwellenwerte
+npm-scan scan-lockfile --score-only
 ```
 
 ### Berichte generieren

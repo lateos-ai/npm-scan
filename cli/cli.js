@@ -28,6 +28,7 @@ program
   .option('--fail-on <level>', 'Exit with code 1 if findings >= level (low|medium|high|critical)', 'none')
   .option('--sarif [file]', 'Output SARIF v2.1 format to file or stdout')
   .option('--csv [file]', 'Output CSV format to file or stdout')
+  .option('--score-only', 'Output only the risk score (0-10)')
   .action(async (target, options) => {
     try {
       if (!target && !options.file) {
@@ -65,6 +66,15 @@ program
         blocked = result.blocked;
       }
 
+      const { calculateRiskScore } = await import('../backend/report.js');
+      const riskScore = calculateRiskScore(outputFindings);
+
+      if (options.scoreOnly) {
+        console.log(riskScore);
+        import('../backend/fetch.js').then(m => m.cleanup(tmpDir));
+        return;
+      }
+
       if (options.sarif) {
         const { generateSARIF } = await import('../backend/report.js');
         const scan = { package_name: pkgName, version: pkgJson.version || 'latest', findings: outputFindings };
@@ -93,7 +103,7 @@ program
         const sbom = generateSBOM(pkg, outputFindings, options.sbom === true ? 'json' : options.sbom);
         console.log(sbom);
       } else {
-        console.log(JSON.stringify({scanId, findings: outputFindings, blocked}, null, 2));
+        console.log(JSON.stringify({scanId, findings: outputFindings, blocked, riskScore}, null, 2));
       }
 
       if (blocked) {

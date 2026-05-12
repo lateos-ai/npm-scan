@@ -214,3 +214,9 @@ export function generateCSV(scans) {
   ).join('\n');
   return headers + rows;
 }
+
+export function calculateRiskScore(findings, totalPackages = 1) {
+  const weights = { low: 1, medium: 3, high: 7, critical: 10 };
+  const rawScore = findings.reduce((sum, f) => sum + (weights[f.severity] || 0), 0) / totalPackages;
+  return Math.min(rawScore, 10).toFixed(1);
+}
