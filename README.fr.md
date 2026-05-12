@@ -576,6 +576,7 @@ node --test test/detectors-corpus.test.js
 
 ### Besoin d'aide ?
 
+- 🔒 Voir la [politique de sécurité](SECURITY.md) pour la divulgation des vulnérabilités
 - 📖 Lire le [plan du projet](docs/project-plan.md)
 - 🧬 Consulter la [taxonomie des attaques](docs/attack-taxonomy.md)
 - 🐛 Ouvrir une issue ou une PR

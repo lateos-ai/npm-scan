@@ -576,6 +576,7 @@ node --test test/detectors-corpus.test.js
 
 ### ヘルプが必要ですか？
 
+- 🔒 [セキュリティポリシー](SECURITY.md)で脆弱性の開示方法を確認
 - 📖 [プロジェクト計画](docs/project-plan.md)を読む
 - 🧬 [攻撃分類](docs/attack-taxonomy.md)を確認
 - 🐛 IssueまたはPRを開く

@@ -42,3 +42,4 @@ Run `npm test` (222 tests), `npm run test:coverage` (85%+), `npm run lint`, `npm
 - Node >= 18 required
 - License-gated premium: all code public, HMAC-signed `license.js` gates premium features
 - Follow project-plan.md phases/ATK taxonomy
+- Security vulns reported via GitHub Private Vulnerability Reporting (see `SECURITY.md`)

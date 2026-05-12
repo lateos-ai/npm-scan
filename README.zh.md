@@ -576,6 +576,7 @@ node --test test/detectors-corpus.test.js
 
 ### 需要帮助？
 
+- 🔒 查看[安全策略](SECURITY.md)了解漏洞披露流程
 - 📖 阅读[项目计划](docs/project-plan.md)
 - 🧬 查看[攻击分类](docs/attack-taxonomy.md)
 - 🐛 提交 issue 或 PR
