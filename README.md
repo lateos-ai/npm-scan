@@ -5,6 +5,7 @@
 [![Node](https://img.shields.io/badge/node-%3E%3D18-brightgreen?style=flat-square)](package.json)
 [![Tests](https://img.shields.io/badge/tests-222%20passing-brightgreen?style=flat-square)](https://github.com/lateos-ai/npm-scan)
 [![Coverage](https://img.shields.io/badge/coverage-85%25-yellowgreen?style=flat-square)](https://github.com/lateos-ai/npm-scan)
+[![Docker](https://img.shields.io/badge/docker-ghcr.io%2Flateos%2Fnpm--scan-2496ED?style=flat-square&logo=docker)](https://github.com/lateos-ai/npm-scan/pkgs/container/npm-scan)
 
 [![中文](https://img.shields.io/badge/lang-zh--CN-red?style=flat-square)](https://github.com/lateos-ai/npm-scan/blob/main/README.zh.md)
 [![日本語](https://img.shields.io/badge/lang-ja-purple?style=flat-square)](https://github.com/lateos-ai/npm-scan/blob/main/README.ja.md)
@@ -89,6 +90,34 @@ npm-scan report
 ```bash
 npx @lateos/npm-scan scan commander
 ```
+
+---
+
+## 🐳 Run @lateos/npm-scan anywhere with Docker — zero installation
+
+```bash
+# Pull and run a single scan — no Node.js or npm required
+docker run --rm ghcr.io/lateos/npm-scan:cli scan lodash
+
+# Full pipeline with persistent storage and Compose
+docker compose --profile pipeline up -d
+```
+
+No Node.js. No `npm install`. No global packages. Works on any system with Docker — CI servers, air-gapped environments, Kubernetes clusters. Multi-arch images for `linux/amd64` and `linux/arm64`.
+
+---
+
+## 🐳 Run @lateos/npm-scan anywhere with Docker — zero installation
+
+```bash
+# Pull and run a single scan — no Node.js or npm required
+docker run --rm ghcr.io/lateos/npm-scan:cli scan lodash
+
+# Full pipeline with persistent storage and Compose
+docker compose --profile pipeline up -d
+```
+
+No Node.js. No `npm install`. No global packages. Works on any system with Docker — CI servers, air-gapped environments, Kubernetes clusters. Multi-arch images for `linux/amd64` and `linux/arm64`.
 
 ---
 
@@ -391,21 +420,7 @@ npm-scan report --html > report.html
 
 ### Docker
 
-```bash
-# Pull and run
-docker pull ghcr.io/lateos/npm-scan:cli
-docker run --rm ghcr.io/lateos/npm-scan:cli scan lodash
-
-# Full pipeline with Compose (Redis-based queue)
-docker compose --profile pipeline up -d
-
-# CLI with persistent storage
-docker compose --profile cli up -d
-```
-
-Multi-arch images available for `linux/amd64` and `linux/arm64`.
-
-### GitHub Action (for downstream users)
+See the [Docker quick-start section](#-run-lateosnpm-scan-anywhere-with-docker--zero-installation) above for pull commands, Compose pipeline, and multi-arch images.
 
 Scan your project's `package-lock.json` on every PR — detects typosquats, obfuscated payloads, credential harvesters, and worm propagation before they reach production:
 
@@ -499,19 +514,7 @@ npm-scan report --html > report.html
 
 ### Docker
 
-```bash
-# Pull and run
-docker pull ghcr.io/lateos/npm-scan:cli
-docker run --rm ghcr.io/lateos/npm-scan:cli scan lodash
-
-# Full pipeline with Compose (Redis-based queue)
-docker compose --profile pipeline up -d
-
-# CLI with persistent storage
-docker compose --profile cli up -d
-```
-
-Multi-arch images available for `linux/amd64` and `linux/arm64`.
+See the [Docker quick-start section](#-run-lateosnpm-scan-anywhere-with-docker--zero-installation) above for pull commands, Compose pipeline, and multi-arch images.
 
 ---
 

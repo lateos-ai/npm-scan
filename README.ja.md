@@ -11,6 +11,7 @@
 [![Node](https://img.shields.io/badge/node-%3E%3D18-brightgreen?style=flat-square)](package.json)
 [![Tests](https://img.shields.io/badge/tests-222%20passing-brightgreen?style=flat-square)](https://github.com/lateos-ai/npm-scan)
 [![Coverage](https://img.shields.io/badge/coverage-85%25-yellowgreen?style=flat-square)](https://github.com/lateos-ai/npm-scan)
+[![Docker](https://img.shields.io/badge/docker-ghcr.io%2Flateos%2Fnpm--scan-2496ED?style=flat-square&logo=docker)](https://github.com/lateos-ai/npm-scan/pkgs/container/npm-scan)
 
 **npmエコシステムのためのモダンなサプライチェーンセキュリティ。**  
 静的解析＋行動分析で、npm audit、Snyk、Socketが見逃す脅威——難読化ペイロード、認証情報窃取、条件付きトリガー、サンドボックス回避、ワーム型伝播——を検出します。
@@ -90,6 +91,20 @@ npm-scan report
 ```bash
 npx @lateos/npm-scan scan commander
 ```
+
+---
+
+## 🐳 Dockerで@lateos/npm-scanをどこでも実行 — インストール不要
+
+```bash
+# 単一スキャンをプルして実行 — Node.jsやnpmは不要
+docker run --rm ghcr.io/lateos/npm-scan:cli scan lodash
+
+# 永続ストレージとComposeを使用した完全パイプライン
+docker compose --profile pipeline up -d
+```
+
+Node.js不要。`npm install`不要。グローバルパッケージ不要。Dockerがあればどんなシステムでも動作——CIサーバー、エアギャップ環境、Kubernetesクラスター。`linux/amd64`および`linux/arm64`向けマルチアーキテクチャイメージ。
 
 ---
 
@@ -392,21 +407,7 @@ npm-scan report --html > report.html
 
 ### Docker
 
-```bash
-# プルして実行
-docker pull ghcr.io/lateos/npm-scan:cli
-docker run --rm ghcr.io/lateos/npm-scan:cli scan lodash
-
-# Composeを使用した完全パイプライン（Redisベースのキュー）
-docker compose --profile pipeline up -d
-
-# 永続ストレージ付きCLI
-docker compose --profile cli up -d
-```
-
-`linux/amd64`および`linux/arm64`向けマルチアーキテクチャイメージを提供。
-
-### GitHub Action（ダウンストリームユーザー向け）
+上記の[Dockerクイックスタート](#-dockerでlateosnpm-scanをどこでも実行--インストール不要)セクションを参照してください。プルコマンド、Composeパイプライン、マルチアーキテクチャイメージについて説明しています。
 
 すべてのPRでプロジェクトの`package-lock.json`をスキャン——タイポスクワッティング、難読化ペイロード、認証情報窃取ツール、ワーム伝播を本番環境に到達する前に検出：
 
@@ -500,19 +501,7 @@ npm-scan report --html > report.html
 
 ### Docker
 
-```bash
-# プルして実行
-docker pull ghcr.io/lateos/npm-scan:cli
-docker run --rm ghcr.io/lateos/npm-scan:cli scan lodash
-
-# Composeを使用した完全パイプライン（Redisベースのキュー）
-docker compose --profile pipeline up -d
-
-# 永続ストレージ付きCLI
-docker compose --profile cli up -d
-```
-
-`linux/amd64`および`linux/arm64`向けマルチアーキテクチャイメージを提供。
+上記の[Dockerクイックスタート](#-dockerでlateosnpm-scanをどこでも実行--インストール不要)セクションを参照してください。プルコマンド、Composeパイプライン、マルチアーキテクチャイメージについて説明しています。
 
 ---
 

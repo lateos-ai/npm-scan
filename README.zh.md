@@ -11,6 +11,7 @@
 [![Node](https://img.shields.io/badge/node-%3E%3D18-brightgreen?style=flat-square)](package.json)
 [![Tests](https://img.shields.io/badge/tests-222%20passing-brightgreen?style=flat-square)](https://github.com/lateos-ai/npm-scan)
 [![Coverage](https://img.shields.io/badge/coverage-85%25-yellowgreen?style=flat-square)](https://github.com/lateos-ai/npm-scan)
+[![Docker](https://img.shields.io/badge/docker-ghcr.io%2Flateos%2Fnpm--scan-2496ED?style=flat-square&logo=docker)](https://github.com/lateos-ai/npm-scan/pkgs/container/npm-scan)
 
 **适用于 npm 生态系统的现代供应链安全工具。**  
 静态 + 行为分析，捕获 npm audit、Snyk 和 Socket 遗漏的威胁——混淆载荷、凭证窃取器、条件触发器、沙箱逃逸以及蠕虫式传播。
@@ -90,6 +91,20 @@ npm-scan report
 ```bash
 npx @lateos/npm-scan scan commander
 ```
+
+---
+
+## 🐳 在任何地方通过 Docker 运行 @lateos/npm-scan — 零安装
+
+```bash
+# 拉取并运行单次扫描 — 无需 Node.js 或 npm
+docker run --rm ghcr.io/lateos/npm-scan:cli scan lodash
+
+# 使用持久化存储和 Compose 的完整流水线
+docker compose --profile pipeline up -d
+```
+
+无需 Node.js。无需 `npm install`。无需全局包。适用于任何拥有 Docker 的系统——CI 服务器、气隙环境、Kubernetes 集群。支持 `linux/amd64` 和 `linux/arm64` 的多架构镜像。
 
 ---
 
@@ -392,21 +407,7 @@ npm-scan report --html > report.html
 
 ### Docker
 
-```bash
-# 拉取并运行
-docker pull ghcr.io/lateos/npm-scan:cli
-docker run --rm ghcr.io/lateos/npm-scan:cli scan lodash
-
-# 使用 Compose 的完整流水线（基于 Redis 的队列）
-docker compose --profile pipeline up -d
-
-# 带持久化存储的 CLI
-docker compose --profile cli up -d
-```
-
-支持 `linux/amd64` 和 `linux/arm64` 的多架构镜像。
-
-### GitHub Action（面向下游用户）
+请参见上方的 [Docker 快速入门部分](#-在任何地方通过-docker-运行-lateosnpm-scan--零安装)，了解拉取命令、Compose 流水线和多架构镜像。
 
 在每个 PR 上扫描您项目的 `package-lock.json`——在它们进入生产环境之前检测域名抢注、混淆载荷、凭证窃取器和蠕虫传播：
 
@@ -500,19 +501,7 @@ npm-scan report --html > report.html
 
 ### Docker
 
-```bash
-# 拉取并运行
-docker pull ghcr.io/lateos/npm-scan:cli
-docker run --rm ghcr.io/lateos/npm-scan:cli scan lodash
-
-# 使用 Compose 的完整流水线（基于 Redis 的队列）
-docker compose --profile pipeline up -d
-
-# 带持久化存储的 CLI
-docker compose --profile cli up -d
-```
-
-支持 `linux/amd64` 和 `linux/arm64` 的多架构镜像。
+请参见上方的 [Docker 快速入门部分](#-在任何地方通过-docker-运行-lateosnpm-scan--零安装)，了解拉取命令、Compose 流水线和多架构镜像。
 
 ---
 

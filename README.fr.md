@@ -11,6 +11,7 @@
 [![Node](https://img.shields.io/badge/node-%3E%3D18-brightgreen?style=flat-square)](package.json)
 [![Tests](https://img.shields.io/badge/tests-222%20passing-brightgreen?style=flat-square)](https://github.com/lateos-ai/npm-scan)
 [![Coverage](https://img.shields.io/badge/coverage-85%25-yellowgreen?style=flat-square)](https://github.com/lateos-ai/npm-scan)
+[![Docker](https://img.shields.io/badge/docker-ghcr.io%2Flateos%2Fnpm--scan-2496ED?style=flat-square&logo=docker)](https://github.com/lateos-ai/npm-scan/pkgs/container/npm-scan)
 
 **Sécurité moderne de la chaîne d'approvisionnement pour l'écosystème npm.**  
 Analyse statique + comportementale qui détecte ce que npm audit, Snyk et Socket manquent — charges utiles obfusquées, voleurs d'identifiants, déclencheurs conditionnels, contournement de sandbox et propagation de type ver.
@@ -90,6 +91,20 @@ npm-scan report
 ```bash
 npx @lateos/npm-scan scan commander
 ```
+
+---
+
+## 🐳 Exécutez @lateos/npm-scan partout avec Docker — zéro installation
+
+```bash
+# Tirez et exécutez un scan unique — pas de Node.js ni npm requis
+docker run --rm ghcr.io/lateos/npm-scan:cli scan lodash
+
+# Pipeline complet avec stockage persistant et Compose
+docker compose --profile pipeline up -d
+```
+
+Pas de Node.js. Pas de `npm install`. Pas de paquets globaux. Fonctionne sur tout système avec Docker — serveurs CI, environnements air-gap, clusters Kubernetes. Images multi-arch pour `linux/amd64` et `linux/arm64`.
 
 ---
 
@@ -392,21 +407,7 @@ npm-scan report --html > report.html
 
 ### Docker
 
-```bash
-# Tirer et exécuter
-docker pull ghcr.io/lateos/npm-scan:cli
-docker run --rm ghcr.io/lateos/npm-scan:cli scan lodash
-
-# Pipeline complet avec Compose (file d'attente basée sur Redis)
-docker compose --profile pipeline up -d
-
-# CLI avec stockage persistant
-docker compose --profile cli up -d
-```
-
-Images multi-arch disponibles pour `linux/amd64` et `linux/arm64`.
-
-### GitHub Action (pour les utilisateurs en aval)
+Voir la [section Démarrage rapide Docker](#-exécutez-lateosnpm-scan-partout-avec-docker--zéro-installation) ci-dessus pour les commandes de tirage, le pipeline Compose et les images multi-arch.
 
 Scannez le `package-lock.json` de votre projet à chaque PR — détecte les typosquattings, les charges utiles obfusquées, les voleurs d'identifiants et la propagation de ver avant qu'ils n'atteignent la production :
 
@@ -500,19 +501,7 @@ npm-scan report --html > report.html
 
 ### Docker
 
-```bash
-# Tirer et exécuter
-docker pull ghcr.io/lateos/npm-scan:cli
-docker run --rm ghcr.io/lateos/npm-scan:cli scan lodash
-
-# Pipeline complet avec Compose (file d'attente basée sur Redis)
-docker compose --profile pipeline up -d
-
-# CLI avec stockage persistant
-docker compose --profile cli up -d
-```
-
-Images multi-arch disponibles pour `linux/amd64` et `linux/arm64`.
+Voir la [section Démarrage rapide Docker](#-exécutez-lateosnpm-scan-partout-avec-docker--zéro-installation) ci-dessus pour les commandes de tirage, le pipeline Compose et les images multi-arch.
 
 ---
 
