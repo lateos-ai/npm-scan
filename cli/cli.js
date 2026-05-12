@@ -15,47 +15,56 @@ function requirePremium(feature, licenseKey) {
 const program = new Command()
   .name('npm-scan')
   .description('npm supply chain security scanner')
-  .version('0.9.0');
+  .version('0.9.7');
 
 program
   .command('scan')
   .description('Scan a package')
-  .argument('<target>', 'package name')
+  .argument('[target]', 'package name')
+  .option('-f, --file <path>', 'local tarball path')
   .option('-l, --license-key <key>', 'Premium license')
   .option('--sbom [format]', 'Generate SBOM (json/xml/spdx)')
   .option('-p, --policy <path>', 'Policy file (YAML/JSON)')
   .action(async (target, options) => {
     try {
+      if (!target && !options.file) {
+        console.error('Error: specify a package name or --file <path>');
+        process.exit(1);
+      }
+
       const policy = options.policy
         ? await import('../backend/policy.js').then(m => m.loadPolicy(options.policy))
         : null;
 
       if (policy) {
         const { isAllowed } = await import('../backend/policy.js');
-        if (isAllowed(target, policy)) {
+        if (target && isAllowed(target, policy)) {
           console.log(JSON.stringify({ scanId: null, findings: [], skipped: true, reason: `Package '${target}' is in policy allowlist` }));
           return;
         }
       }
 
-      const { pkgJson, jsFiles, tmpDir } = await import('../backend/fetch.js').then(m => m.fetchPackage(target));
+      const { pkgJson, jsFiles, tmpDir } = options.file
+        ? await import('../backend/fetch.js').then(m => m.scanLocalTarball(options.file))
+        : await import('../backend/fetch.js').then(m => m.fetchPackage(target));
+      const pkgName = target || pkgJson.name || 'unknown';
       const findings = await import('../backend/detectors/index.js').then(m => m.runAll(pkgJson, jsFiles));
       const { saveScan } = await import('../backend/db.js');
-      const scanId = await saveScan(target, 'latest', findings);
+      const scanId = await saveScan(pkgName, 'latest', findings);
 
       let outputFindings = findings;
       let blocked = false;
 
       if (policy) {
         const { applyPolicy } = await import('../backend/policy.js');
-        const result = applyPolicy(findings, target, policy);
+        const result = applyPolicy(findings, pkgName, policy);
         outputFindings = result.findings;
         blocked = result.blocked;
       }
 
       if (options.sbom) {
         const { generateSBOM } = await import('../backend/sbom.js');
-        const pkg = { name: target, version: pkgJson.version || 'latest' };
+        const pkg = { name: pkgName, version: pkgJson.version || 'latest' };
         const sbom = generateSBOM(pkg, outputFindings, options.sbom === true ? 'json' : options.sbom);
         console.log(sbom);
       } else {

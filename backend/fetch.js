@@ -20,6 +20,16 @@ export async function fetchPackage(target) {
   if (buffer.length > 500 * 1024 * 1024) throw new Error('Tarball too large');
 
   const tmpDir = path.join(os.tmpdir(), 'npm-scan-' + Date.now());
+  return { ...(await extractTarball(buffer, tmpDir)), meta };
+}
+
+export async function scanLocalTarball(filePath) {
+  const buffer = fs.readFileSync(filePath);
+  const tmpDir = path.join(os.tmpdir(), 'npm-scan-local-' + Date.now());
+  return await extractTarball(buffer, tmpDir);
+}
+
+async function extractTarball(buffer, tmpDir) {
   fs.mkdirSync(tmpDir, { recursive: true });
 
   const stream = Readable.from(buffer);
