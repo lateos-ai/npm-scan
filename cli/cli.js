@@ -25,6 +25,8 @@ program
   .option('-l, --license-key <key>', 'Premium license')
   .option('--sbom [format]', 'Generate SBOM (json/xml/spdx)')
   .option('-p, --policy <path>', 'Policy file (YAML/JSON)')
+  .option('--fail-on <level>', 'Exit with code 1 if findings >= level (low|medium|high|critical)', 'none')
+  .option('--sarif [file]', 'Output SARIF v2.1 format to file or stdout')
   .action(async (target, options) => {
     try {
       if (!target && !options.file) {
@@ -62,7 +64,18 @@ program
         blocked = result.blocked;
       }
 
-      if (options.sbom) {
+      if (options.sarif) {
+        const { generateSARIF } = await import('../backend/report.js');
+        const scan = { package_name: pkgName, version: pkgJson.version || 'latest', findings: outputFindings };
+        const sarifOutput = generateSARIF(scan);
+        if (options.sarif === true || !options.sarif) {
+          console.log(sarifOutput);
+        } else {
+          const { writeFileSync } = await import('fs');
+          writeFileSync(options.sarif, sarifOutput);
+          console.log(`SARIF output written to ${options.sarif}`);
+        }
+      } else if (options.sbom) {
         const { generateSBOM } = await import('../backend/sbom.js');
         const pkg = { name: pkgName, version: pkgJson.version || 'latest' };
         const sbom = generateSBOM(pkg, outputFindings, options.sbom === true ? 'json' : options.sbom);
@@ -76,6 +89,16 @@ program
         process.exit(1);
       }
 
+      if (options.failOn !== 'none') {
+        const severityLevels = { low: 1, medium: 2, high: 3, critical: 4 };
+        const failLevel = severityLevels[options.failOn] || 0;
+        const hasBlockingFindings = outputFindings.some(f => (severityLevels[f.severity] || 0) >= failLevel);
+        if (hasBlockingFindings) {
+          console.error(`Fail: findings with severity >= ${options.failOn} detected`);
+          process.exit(1);
+        }
+      }
+
       import('../backend/fetch.js').then(m => m.cleanup(tmpDir));
     } catch (e) {
       console.error(e.message);
@@ -87,6 +110,7 @@ program
   .command('scan-lockfile')
   .description('Scan package-lock.json')
   .option('-f, --file <path>', 'lockfile path', 'package-lock.json')
+  .option('--fail-on <level>', 'Exit with code 1 if findings >= level (low|medium|high|critical)', 'none')
   .action((options) => {
     console.log('Scanning lockfile:', options.file);
   });

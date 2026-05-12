@@ -136,6 +136,15 @@ npm-scan scan-lockfile
 
 # 扫描特定锁定文件
 npm-scan scan-lockfile -f ./path/to/package-lock.json
+
+# 在高危或严重问题时使 CI/CD 失败（退出码 1）
+npm-scan scan-lockfile --fail-on high
+
+# 任何发现项都使构建失败（low 及以上）
+npm-scan scan-lockfile --fail-on low
+
+# 生成 SARIF v2.1 输出，用于 GitHub Advanced Security / VS Code
+npm-scan scan-lockfile --sarif results.sarif
 ```
 
 ### 生成报告

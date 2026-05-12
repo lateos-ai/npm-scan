@@ -136,6 +136,15 @@ npm-scan scan-lockfile
 
 # Scanner un fichier de verrouillage spécifique
 npm-scan scan-lockfile -f ./path/to/package-lock.json
+
+# Échouer en CI/CD sur les découvertes de severity haute ou critique (code de sortie 1)
+npm-scan scan-lockfile --fail-on high
+
+# Échouer sur toute découverte (low et au-delà)
+npm-scan scan-lockfile --fail-on low
+
+# Générer une sortie SARIF v2.1 pour GitHub Advanced Security / VS Code
+npm-scan scan-lockfile --sarif results.sarif
 ```
 
 ### Générer des rapports

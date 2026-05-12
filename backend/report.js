@@ -156,3 +156,45 @@ function generateNistTable(scans) {
 <tbody>${rows}</tbody>
 </table>`;
 }
+
+export function generateSARIF(scan, format = 'json') {
+  const findings = scan.findings || [];
+  const runs = [{
+    tool: {
+      driver: {
+        name: 'npm-scan',
+        version: '0.9.7',
+        informationUri: 'https://github.com/lateos-ai/npm-scan',
+        rules: Array.from(new Set(findings.map(f => f.id))).map(id => ({
+          id,
+          name: `ATK-${id.replace('ATK-', '')}`,
+          shortDescription: { text: findings.find(f => f.id === id)?.title || id },
+          fullDescription: { text: findings.find(f => f.id === id)?.description || '' },
+          defaultConfiguration: { enabled: true }
+        }))
+      }
+    },
+    results: findings.map(f => {
+      const severityMap = { critical: 'error', high: 'error', medium: 'warning', low: 'note' };
+      return {
+        ruleId: f.id,
+        level: severityMap[f.severity] || 'note',
+        message: { text: f.description || f.title },
+        locations: [{
+          physicalLocation: {
+            artifactLocation: { uri: f.evidence || 'unknown' },
+            region: { startLine: 1, startColumn: 1 }
+          }
+        }]
+      };
+    })
+  }];
+
+  const sarif = {
+    version: '2.1.0',
+    schema: 'https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json',
+    runs
+  };
+
+  return format === 'pretty' ? JSON.stringify(sarif, null, 2) : JSON.stringify(sarif);
+}

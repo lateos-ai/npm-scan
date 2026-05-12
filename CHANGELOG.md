@@ -8,11 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 - `scan --file <path>` flag to analyze local `.tgz` tarballs without fetching from npm registry
-
-## [Unreleased]
-
-### Added
-- `scan --file <path>` flag to analyze local `.tgz` tarballs without fetching from npm registry
+- `scan --fail-on <level>` flag to exit with code 1 when findings >= severity (CI/CD integration)
+- `scan --sarif [file]` to output SARIF v2.1 format for GitHub Advanced Security, VS Code, Azure DevOps
 
 ## [0.9.7] — 2026-05-12
 
