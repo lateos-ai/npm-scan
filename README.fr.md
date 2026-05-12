@@ -591,6 +591,19 @@ node --test test/detectors-corpus.test.js
 Apache-2.0 core + Commons Clause.  
 Voir [`LICENSING.md`](LICENSING.md) pour la limite exacte entre les fonctionnalités gratuites et premium.
 
+---
+
+## 👤 À propos du mainteneur
+
+**Roongrunchai Chongolnee** — créateur et mainteneur de `@lateos/npm-scan`. Professionnel de la sécurité certifié (CISSP, CEH, Cisco Security, AWS Cloud Practitioner) avec une décennie d'expérience en sécurité des infrastructures et des applications chez Philips. J'ai construit cet outil pour offrir à la communauté open-source une défense pratique et pilotée par des détecteurs contre les logiciels malveillants de la chaîne d'approvisionnement — et je m'engage à le maintenir transparent, détenu par la communauté et en amélioration continue.
+
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0A66C2?style=flat-square&logo=linkedin)](https://www.linkedin.com/in/roongrunchai-chong-c-ab9742108/)
+[![GitHub](https://img.shields.io/badge/GitHub-lateos--ai-181717?style=flat-square&logo=github)](https://github.com/lateos-ai/npm-scan)
+
+Les issues, idées et pull requests sont toujours les bienvenus — la sécurité est plus forte quand nous collaborons.
+
+---
+
 ```
 @lateos/npm-scan — npm supply chain security scanner
 Copyright (C) 2026 Lateos

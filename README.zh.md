@@ -591,6 +591,19 @@ node --test test/detectors-corpus.test.js
 Apache-2.0 核心 + Commons Clause。  
 请参阅 [`LICENSING.md`](LICENSING.md) 了解免费版和高级版功能之间的确切界限。
 
+---
+
+## 👤 关于维护者
+
+**Roongrunchai Chongolnee** — `@lateos/npm-scan` 的创建者和维护者。持有 CISSP、CEH、思科安全、AWS 云从业者认证的安全专业人士，在飞利浦拥有十年的基础设施和应用安全经验。我构建这个工具是为了让开源社区拥有一个实用、检测器驱动的供应链恶意软件防御方案——我致力于保持其透明、社区拥有和持续改进。
+
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0A66C2?style=flat-square&logo=linkedin)](https://www.linkedin.com/in/roongrunchai-chong-c-ab9742108/)
+[![GitHub](https://img.shields.io/badge/GitHub-lateos--ai-181717?style=flat-square&logo=github)](https://github.com/lateos-ai/npm-scan)
+
+欢迎提交 issue、想法和 PR——安全在协作中最强大。
+
+---
+
 ```
 @lateos/npm-scan — npm supply chain security scanner
 Copyright (C) 2026 Lateos
