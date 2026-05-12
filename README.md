@@ -107,20 +107,6 @@ No Node.js. No `npm install`. No global packages. Works on any system with Docke
 
 ---
 
-## 🐳 Run @lateos/npm-scan anywhere with Docker — zero installation
-
-```bash
-# Pull and run a single scan — no Node.js or npm required
-docker run --rm ghcr.io/lateos/npm-scan:cli scan lodash
-
-# Full pipeline with persistent storage and Compose
-docker compose --profile pipeline up -d
-```
-
-No Node.js. No `npm install`. No global packages. Works on any system with Docker — CI servers, air-gapped environments, Kubernetes clusters. Multi-arch images for `linux/amd64` and `linux/arm64`.
-
----
-
 ## 📖 Usage Examples
 
 ### Scan a single package
