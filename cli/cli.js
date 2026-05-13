@@ -1,6 +1,10 @@
 #!/usr/bin/env node
 
 import { Command } from 'commander';
+import { watch } from 'fs';
+import { statSync } from 'fs';
+import { execSync } from 'child_process';
+import { glob } from 'glob';
 import { isFeatureEnabled, generateKey } from '../backend/license.js';
 
 function requirePremium(feature, licenseKey) {
@@ -164,8 +168,76 @@ program
   .option('--fail-on <level>', 'Exit with code 1 if findings >= level (low|medium|high|critical)', 'none')
   .option('--csv [file]', 'Output CSV format to file or stdout')
   .option('--sarif [file]', 'Output SARIF v2.1 format to file or stdout')
-  .action((options) => {
-    console.log('Scanning lockfile:', options.file);
+  .option('--watch', 'Watch for changes and re-scan automatically')
+  .option('--debounce <ms>', 'Debounce delay in ms before rescanning (default: 1000)', '1000')
+  .option('--silent', 'Suppress stdout output (useful for piping)')
+  .option('--monorepo', 'Scan all package-lock.json files in workspace')
+  .action(async (options) => {
+    const silent = options.silent;
+    const debounce = parseInt(options.debounce, 10) || 1000;
+    const isWatch = options.watch;
+    const isMonorepo = options.monorepo;
+
+    if (isWatch) {
+      if (isMonorepo) {
+        const lockfiles = await glob('**/package-lock.json', { ignore: 'node_modules/**' });
+
+        if (!silent) {
+          console.log(`\x1b[32m✔\x1b[0m npm-scan watch mode (monorepo) — ${lockfiles.length} lockfiles`);
+          console.log(`  Debounce: ${debounce}ms | Press Ctrl+C to stop\n`);
+        }
+
+        let timers = {};
+        for (const lf of lockfiles) {
+          if (!silent) console.log(`  Watching: ${lf}`);
+          const watcher = watch(lf, (eventType) => {
+            if (eventType !== 'change') return;
+            clearTimeout(timers[lf]);
+            timers[lf] = setTimeout(() => {
+              if (!silent) {
+                console.log(`\n\x1b[90m[${new Date().toLocaleTimeString()}]\x1b[0m ${lf} changed — scanning...`);
+              }
+              try {
+                execSync(`node cli/cli.js scan-lockfile -f "${lf}" --fail-on ${options.failOn || 'high'} --silent`, { stdio: silent ? 'ignore' : 'inherit' });
+              } catch (e) {}
+            }, debounce);
+          });
+        }
+
+        process.on('SIGINT', () => {
+          if (!silent) console.log('\n\x1b[33m✖\x1b[0m Stopped.');
+          process.exit(0);
+        });
+      } else {
+        const lockfile = options.file;
+        let lastSize = 0;
+        try { lastSize = statSync(lockfile).size; } catch {}
+
+        if (!silent) {
+          console.log(`\x1b[32m✔\x1b[0m npm-scan watch mode — ${lockfile}`);
+          console.log(`  Debounce: ${debounce}ms | Press Ctrl+C to stop\n`);
+        }
+
+        const watcher = watch(lockfile, (eventType) => {
+          if (eventType !== 'change') return;
+          const size = statSync(lockfile).size;
+          if (size === lastSize) return;
+          lastSize = size;
+          if (!silent) console.log(`\n\x1b[90m[${new Date().toLocaleTimeString()}]\x1b[0m ${lockfile} changed — rescanning...`);
+          try {
+            execSync(`node cli/cli.js scan-lockfile --fail-on ${options.failOn || 'high'} --silent`, { stdio: silent ? 'ignore' : 'inherit' });
+          } catch (e) {}
+        });
+
+        process.on('SIGINT', () => {
+          watcher.close();
+          if (!silent) console.log('\n\x1b[33m✖\x1b[0m Stopped.');
+          process.exit(0);
+        });
+      }
+    } else {
+      console.log('Scanning lockfile:', options.file);
+    }
   });
 
 program

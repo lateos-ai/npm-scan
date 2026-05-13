@@ -205,6 +205,15 @@ npm-scan scan-lockfile --fail-on low
 # Generate SARIF v2.1 output for GitHub Advanced Security / VS Code
 npm-scan scan-lockfile --sarif results.sarif
 
+# Watch for changes and auto-rescan (single lockfile)
+npm-scan scan-lockfile --watch
+
+# Watch with faster debounce (500ms) — great for dev workflows
+npm-scan scan-lockfile --watch --debounce 500
+
+# Watch monorepo (all package-lock.json files in workspace)
+npm-scan scan-lockfile --watch --monorepo
+
 # Output only risk score (0-10) for dashboards/thresholds
 npm-scan scan-lockfile --score-only
 ```
@@ -621,6 +630,7 @@ See the [Docker quick-start section](#-run-lateosnpm-scan-anywhere-with-docker--
 - GitHub Action
 - Pre-commit hook (husky + lint-staged)
 - Docker images + Compose pipeline
+- Watch mode (--watch / --monorepo for auto-rescan)
 
 ### Premium (🔐 license key)
 
