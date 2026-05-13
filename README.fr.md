@@ -12,6 +12,7 @@
 [![Tests](https://img.shields.io/badge/tests-222%20passing-brightgreen?style=flat-square)](https://github.com/lateos-ai/npm-scan)
 [![Coverage](https://img.shields.io/badge/coverage-85%25-yellowgreen?style=flat-square)](https://github.com/lateos-ai/npm-scan)
 [![Docker](https://img.shields.io/badge/docker-ghcr.io%2Flateos%2Fnpm--scan-2496ED?style=flat-square&logo=docker)](https://github.com/lateos-ai/npm-scan/pkgs/container/npm-scan)
+[![Sigstore](https://img.shields.io/static/v1?label=Sigstore&message=Provenance&color=green&style=flat-square&logo=sigstore)](https://github.com/lateos-ai/npm-scan/actions/workflows/publish.yml)
 
 **Sécurité moderne de la chaîne d'approvisionnement pour l'écosystème npm.**  
 Analyse statique + comportementale qui détecte ce que npm audit, Snyk et Socket manquent — charges utiles obfusquées, voleurs d'identifiants, déclencheurs conditionnels, contournement de sandbox et propagation de type ver.

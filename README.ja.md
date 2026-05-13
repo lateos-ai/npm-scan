@@ -12,6 +12,7 @@
 [![Tests](https://img.shields.io/badge/tests-222%20passing-brightgreen?style=flat-square)](https://github.com/lateos-ai/npm-scan)
 [![Coverage](https://img.shields.io/badge/coverage-85%25-yellowgreen?style=flat-square)](https://github.com/lateos-ai/npm-scan)
 [![Docker](https://img.shields.io/badge/docker-ghcr.io%2Flateos%2Fnpm--scan-2496ED?style=flat-square&logo=docker)](https://github.com/lateos-ai/npm-scan/pkgs/container/npm-scan)
+[![Sigstore](https://img.shields.io/static/v1?label=Sigstore&message=Provenance&color=green&style=flat-square&logo=sigstore)](https://github.com/lateos-ai/npm-scan/actions/workflows/publish.yml)
 
 **npmエコシステムのためのモダンなサプライチェーンセキュリティ。**  
 静的解析＋行動分析で、npm audit、Snyk、Socketが見逃す脅威——難読化ペイロード、認証情報窃取、条件付きトリガー、サンドボックス回避、ワーム型伝播——を検出します。
