@@ -265,4 +265,64 @@ program
     }
   });
 
+program
+  .command('serve')
+  .description('Start API server (premium feature)')
+  .option('-p, --port <port>', 'Port', '8000')
+  .option('-h, --host <host>', 'Host', '0.0.0.0')
+  .action(async (options) => {
+    const licenseKey = process.env.NPM_SCAN_LICENSE_KEY || options.licenseKey;
+    requirePremium('rest-api', licenseKey);
+
+    const { createServer } = await import('http');
+    const server = createServer(async (req, res) => {
+      const headers = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };
+
+      if (req.url === '/health') {
+        res.writeHead(200, headers);
+        res.end(JSON.stringify({ status: 'ok', version: program.version() }));
+        return;
+      }
+
+      if (req.url === '/scan' && req.method === 'POST') {
+        let body = '';
+        req.on('data', chunk => body += chunk);
+        req.on('end', async () => {
+          try {
+            const { package: pkg, options: scanOpts } = JSON.parse(body);
+            const { scan } = await import('../backend/fetch.js');
+            const results = await scan(pkg, { ...scanOpts, licenseKey });
+            res.writeHead(200, headers);
+            res.end(JSON.stringify({ results }));
+          } catch (e) {
+            res.writeHead(500, headers);
+            res.end(JSON.stringify({ error: e.message }));
+          }
+        });
+        return;
+      }
+
+      if (req.url.startsWith('/siem') && options.siemEnabled) {
+        requirePremium('siem', licenseKey);
+        res.writeHead(200, headers);
+        res.end(JSON.stringify({ siem: 'enabled', endpoint: process.env.SIEM_ENDPOINT }));
+        return;
+      }
+
+      if (req.url.startsWith('/pdf') && options.pdfEnabled) {
+        requirePremium('nist-pdf', licenseKey);
+        res.writeHead(200, headers);
+        res.end(JSON.stringify({ pdf: 'enabled' }));
+        return;
+      }
+
+      res.writeHead(404, headers);
+      res.end(JSON.stringify({ error: 'Not found' }));
+    });
+
+    server.listen(options.port, options.host, () => {
+      console.log(`npm-scan API server running on http://${options.host}:${options.port}`);
+    });
+  });
+
 program.parse();

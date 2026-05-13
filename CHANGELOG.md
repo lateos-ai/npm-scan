@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `scan --csv [file]` and `report --csv [file]` to export tabular CSV for Excel/Sheets import
 - `scan --score-only` to output only risk score (0-10), auto-added to JSON output
 - Government/SOC 2 features: `--audit-log`, `--fips`, `--stig`, `--cache-dir` for air-gapped/federal compliance
+- **BYOC (Bring Your Own Cloud)**: Helm chart v1.0.0 for enterprise/government VPC deployments with SIEM, PDF, SSO
 
 ## [0.9.7] — 2026-05-12
 

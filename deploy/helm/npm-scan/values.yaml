@@ -1,4 +1,4 @@
-# Helm values for npm-scan
+# Helm values for npm-scan BYOC
 # Override per environment: helm install -f values-prod.yaml
 
 image:
@@ -9,9 +9,39 @@ image:
 replicaCount: 1
 
 license:
-  # --license-key or NPM_SCAN_LICENSE_KEY env var
   key: ""
   secret: ""
+
+premium:
+  enabled: false
+  edition: premium
+  byoc:
+    enabled: false
+    cloudProvider: ""
+    vpcId: ""
+    region: ""
+    clusterName: ""
+    externalDb: true
+    externalRedis: true
+
+siem:
+  enabled: false
+  type: cef
+  endpoint: ""
+  port: 514
+  protocol: tcp
+  apiKey: ""
+
+pdf:
+  enabled: false
+
+sso:
+  enabled: false
+  provider: oidc
+  clientId: ""
+  clientSecret: ""
+  issuerUrl: ""
+  allowedDomains: []
 
 postgresql:
   enabled: true

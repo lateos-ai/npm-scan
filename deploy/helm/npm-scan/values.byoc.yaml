@@ -1,0 +1,75 @@
+# BYOC Enterprise values example
+# Deploy to your VPC: helm install -f values.byoc.yaml npm-scan ./
+
+image:
+  repository: ghcr.io/lateos/npm-scan
+  tag: "1.0.0"
+
+premium:
+  enabled: true
+  edition: enterprise
+  byoc:
+    enabled: true
+    cloudProvider: aws
+    vpcId: vpc-0123456789abcdef0
+    region: us-east-1
+    clusterName: npm-scan-enterprise
+    externalDb: true
+    externalRedis: true
+
+license:
+  key: "npm-scan-enterprise-XXXXX.YOUR-SIGNATURE-HERE"
+  secret: "your-license-secret"
+
+siem:
+  enabled: true
+  type: cef
+  endpoint: log-collector.your-company.com
+  port: 514
+  protocol: tcp
+
+pdf:
+  enabled: true
+
+sso:
+  enabled: true
+  provider: oidc
+  clientId: npm-scan-enterprise
+  issuerUrl: https://sso.your-company.com/realms/enterprise
+
+postgresql:
+  enabled: false
+  host: your-rds-endpoint.rds.amazonaws.com
+  port: 5432
+  database: npm_scan
+  username: npm_scan
+  password: ""
+
+redis:
+  enabled: false
+  host: your-redis-endpoint.cache.amazonaws.com
+  port: 6379
+
+ingress:
+  enabled: true
+  className: nginx
+  host: npm-scan.your-company.com
+  tls:
+    - secretName: npm-scan-tls
+      hosts:
+        - npm-scan.your-company.com
+
+persistence:
+  enabled: true
+  size: 50Gi
+  storageClass: gp3
+
+worker:
+  replicas: 4
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: 2
+      memory: 2Gi

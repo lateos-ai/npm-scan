@@ -5,6 +5,8 @@ metadata:
   labels:
     app: {{ include "npm-scan.name" . }}-api
     {{- include "npm-scan.labels" . | nindent 4 }}
+  annotations:
+    stig: "SRG-APP-000141"
 spec:
   replicas: {{ .Values.api.replicas }}
   selector:
@@ -19,7 +21,7 @@ spec:
         - name: api
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          command: ["python", "-m", "api.main"]
+          command: ["node", "cli/cli.js", "serve"]
           ports:
             - containerPort: {{ .Values.api.port }}
           env:
@@ -33,6 +35,32 @@ spec:
                   name: {{ include "npm-scan.name" . }}-license
                   key: key
                   optional: true
+            - name: NPM_SCAN_PREMIUM
+              value: "{{ .Values.premium.enabled }}"
+            {{- if .Values.premium.byoc.enabled }}
+            - name: NPM_SCAN_BYOC
+              value: "true"
+            - name: NPM_SCAN_CLOUD_PROVIDER
+              value: "{{ .Values.premium.byoc.cloudProvider }}"
+            {{- end }}
+            {{- if .Values.siem.enabled }}
+            - name: SIEM_ENABLED
+              value: "true"
+            - name: SIEM_TYPE
+              value: "{{ .Values.siem.type }}"
+            - name: SIEM_ENDPOINT
+              value: "{{ .Values.siem.endpoint }}"
+            - name: SIEM_PORT
+              value: "{{ .Values.siem.port }}"
+            {{- end }}
+            {{- if .Values.sso.enabled }}
+            - name: SSO_ENABLED
+              value: "true"
+            - name: SSO_PROVIDER
+              value: "{{ .Values.sso.provider }}"
+            - name: SSO_ISSUER_URL
+              value: "{{ .Values.sso.issuerUrl }}"
+            {{- end }}
             {{- if .Values.postgresql.enabled }}
             - name: PG_HOST
               value: "{{ .Values.postgresql.host }}"

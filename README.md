@@ -129,6 +129,39 @@ npm-scan report --stig
 
 ---
 
+## ☁️ BYOC — Bring Your Own Cloud
+
+Deploy npm-scan in your VPC with full data sovereignty. No data leaves your infrastructure.
+
+| Feature | Description |
+|---------|-------------|
+| **Self-hosted** | Run on EKS/GKE/AKS in your AWS/Azure/GCP account |
+| **SIEM Export** | CEF/ECS/Sentinel/QRadar to your existing SIEM |
+| **SSO/OIDC** | SAML/OIDC integration with your identity provider |
+| **PDF Reports** | Generate NIST-compliant PDF reports locally |
+| **External DB** | Connect to your existing PostgreSQL/Redis |
+
+```bash
+# Deploy to your VPC with Helm
+git clone https://github.com/lateos-ai/npm-scan.git
+cd npm-scan/deploy/helm
+helm install npm-scan -f values.byoc.yaml .
+
+# BYOC values example (see values.byoc.yaml)
+premium:
+  enabled: true
+  edition: enterprise
+  byoc:
+    enabled: true
+    cloudProvider: aws
+    vpcId: vpc-xxx
+    region: us-east-1
+```
+
+**Pricing**: Enterprise license $10k/yr — self-supported (docs + GitHub issues).
+
+---
+
 ## 📖 Usage Examples
 
 ### Scan a single package
