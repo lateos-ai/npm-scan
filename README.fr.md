@@ -38,7 +38,8 @@ Les attaquants ont dépassé le simple typosquatting. Ils livrent désormais des
 | Correspondance CVE connus | ✅ | ✅ | ❌ | ✅ |
 | Analyse statique | ❌ | ✅ | ✅ | ✅ |
 | Détection de charges utiles obfusquées | ❌ | ❌ | ❌ | ✅ |
-| Analyse comportementale / heuristique | ❌ | ❌ | Partielle | ✅ |
+| Analyse heuristique au niveau AST | ❌ | ❌ | ❌ | ✅ |
+| Bac à sable comportemental runtime | ❌ | ❌ | ✅ | ✅ |
 | Détection de déclencheurs conditionnels (ATK-009) | ❌ | ❌ | ❌ | ✅ |
 | Détection de contournement de sandbox (ATK-010) | ❌ | ❌ | ❌ | ✅ |
 | Propagation transitive de ver (ATK-011) | ❌ | ❌ | ❌ | ✅ |

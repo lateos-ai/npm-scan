@@ -38,7 +38,8 @@ Angreifer haben sich längst über einfaches Typosquatting hinausentwickelt. Sie
 | Bekannte CVE-Übereinstimmung | ✅ | ✅ | ❌ | ✅ |
 | Statische Analyse | ❌ | ✅ | ✅ | ✅ |
 | Erkennung obfuskierter Payloads | ❌ | ❌ | ❌ | ✅ |
-| Verhaltens-/heuristische Analyse | ❌ | ❌ | Teilweise | ✅ |
+| AST-Level heuristische Analyse | ❌ | ❌ | ❌ | ✅ |
+| Runtime-Verhaltenssandbox | ❌ | ❌ | ✅ | ✅ |
 | Erkennung bedingter Auslöser (ATK-009) | ❌ | ❌ | ❌ | ✅ |
 | Sandbox-Evasion-Erkennung (ATK-010) | ❌ | ❌ | ❌ | ✅ |
 | Transitive Wurmverbreitung (ATK-011) | ❌ | ❌ | ❌ | ✅ |

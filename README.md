@@ -37,7 +37,8 @@ Attackers have moved past simple typosquatting. They now ship **obfuscated prein
 | Known CVE matching | ✅ | ✅ | ❌ | ✅ |
 | Static analysis | ❌ | ✅ | ✅ | ✅ |
 | Obfuscated payload detection | ❌ | ❌ | ❌ | ✅ |
-| Behavioral / heuristic analysis | ❌ | ❌ | Partial | ✅ |
+| AST-level heuristic analysis | ❌ | ❌ | ❌ | ✅ |
+| Runtime behavioral sandbox | ❌ | ❌ | ✅ | ✅ |
 | Conditional trigger detection (ATK-009) | ❌ | ❌ | ❌ | ✅ |
 | Sandbox evasion detection (ATK-010) | ❌ | ❌ | ❌ | ✅ |
 | Transitive worm propagation (ATK-011) | ❌ | ❌ | ❌ | ✅ |
