@@ -109,9 +109,9 @@ Kein Node.js. Kein `npm install`. Keine globalen Pakete. Funktioniert auf jedem 
 
 ---
 
-## 🛡️ Behörden- & SOC 2 L2-bereit
+## 🛡️ Behörden- & SOC 2-bereit
 
-| Funktion | SOC 2 | NIST 800-161 | STIG/FedRAMP |
+| Funktion | SOC 2-Kontrollen | NIST 800-161 | STIG/FedRAMP-Ausrichtung |
 |----------|-------|--------------|--------------|
 | Audit-Protokolle (--audit-log) | CC6.8 | AU-2 | ✓ |
 | FIPS-Krypto (--fips) | CC6.1 | SC-13 | ✓ |

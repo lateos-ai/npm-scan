@@ -110,9 +110,9 @@ No Node.js. No `npm install`. No global packages. Works on any system with Docke
 
 ---
 
-## 🛡️ Government & SOC 2 L2 Ready
+## 🛡️ Government & SOC 2 Ready
 
-| Feature | SOC 2 | NIST 800-161 | STIG/FedRAMP |
+| Feature | SOC 2 Controls | NIST 800-161 | STIG/FedRAMP Alignment |
 |---------|-------|--------------|--------------|
 | Audit logs (--audit-log) | CC6.8 | AU-2 | ✓ |
 | FIPS crypto (--fips) | CC6.1 | SC-13 | ✓ |
@@ -127,8 +127,8 @@ npm-scan scan-lockfile --cache-dir /offline/cache --audit-log /var/log/npm-scan.
 npm-scan report --stig
 ```
 
-[![SOC 2 L2](https://img.shields.io/badge/SOC%202-L2-green?style=flat-square&logo=aicpa)](https://www.aicpa.org/interestareas/frc/assuranceadvisoryservices/sorhome.html)
-[![FedRAMP](https://img.shields.io/badge/FedRAMP-Moderate-blue?style=flat-square)](https://fedramp.gov/)
+[![SOC 2 Ready](https://img.shields.io/badge/SOC%202-Ready-green?style=flat-square&logo=aicpa)](https://www.aicpa.org/interestareas/frc/assuranceadvisoryservices/sorhome.html#soc2)
+[![FedRAMP Aligned](https://img.shields.io/badge/FedRAMP-Aligned-blue?style=flat-square&logo=fedramp)](https://fedramp.gov/baselines/)
 
 ---
 

@@ -109,9 +109,9 @@ docker compose --profile pipeline up -d
 
 ---
 
-## 🛡️ 政府与 SOC 2 L2 就绪
+## 🛡️ 政府与 SOC 2 就绪
 
-| 功能 | SOC 2 | NIST 800-161 | STIG/FedRAMP |
+| 功能 | SOC 2 控制 | NIST 800-161 | STIG/FedRAMP 对齐 |
 |------|-------|--------------|--------------|
 | 审计日志 (--audit-log) | CC6.8 | AU-2 | ✓ |
 | FIPS 加密 (--fips) | CC6.1 | SC-13 | ✓ |

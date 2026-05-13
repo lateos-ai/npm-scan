@@ -109,9 +109,9 @@ Node.js不要。`npm install`不要。グローバルパッケージ不要。Doc
 
 ---
 
-## 🛡️ 政府機関・SOC 2 L2 対応
+## 🛡️ 政府機関・SOC 2 対応
 
-| 機能 | SOC 2 | NIST 800-161 | STIG/FedRAMP |
+| 機能 | SOC 2 コントロール | NIST 800-161 | STIG/FedRAMP アライメント |
 |------|-------|--------------|--------------|
 | 監査ログ (--audit-log) | CC6.8 | AU-2 | ✓ |
 | FIPS暗号化 (--fips) | CC6.1 | SC-13 | ✓ |
