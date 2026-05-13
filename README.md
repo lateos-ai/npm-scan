@@ -439,7 +439,7 @@ jobs:
 #### Example: scan a specific package with policy + SBOM
 
 ```yaml
-- uses: lateos/npm-scan@main
+- uses: lateos/npm-scan@v1
   with:
     scan-type: package
     package: lodash
@@ -451,7 +451,7 @@ jobs:
 #### Example: scan with SIEM export (premium)
 
 ```yaml
-- uses: lateos/npm-scan@main
+- uses: lateos/npm-scan@v1
   with:
     scan-type: lockfile
     siem-format: cef
@@ -505,7 +505,7 @@ jobs:
       with:
         node-version: 20
     - name: Scan lockfile
-      uses: lateos/npm-scan@main
+      uses: lateos/npm-scan@v1
       with:
         scan-type: lockfile
         fail-on: high
@@ -533,7 +533,7 @@ jobs:
 #### Example: scan a specific package with policy + SBOM
 
 ```yaml
-- uses: lateos/npm-scan@main
+- uses: lateos/npm-scan@v1
   with:
     scan-type: package
     package: lodash
@@ -545,7 +545,7 @@ jobs:
 #### Example: scan with SIEM export (premium)
 
 ```yaml
-- uses: lateos/npm-scan@main
+- uses: lateos/npm-scan@v1
   with:
     scan-type: lockfile
     siem-format: cef

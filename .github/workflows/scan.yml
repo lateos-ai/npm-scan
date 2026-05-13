@@ -15,7 +15,7 @@ jobs:
       with:
         node-version: 20
     - name: Scan lockfile for supply chain threats
-      uses: lateos/npm-scan@main
+      uses: lateos/npm-scan@v1
       with:
         scan-type: lockfile
         fail-on: high

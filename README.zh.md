@@ -373,7 +373,7 @@ jobs:
       with:
         node-version: 20
     - name: Scan lockfile
-      uses: lateos/npm-scan@main
+      uses: lateos/npm-scan@v1
       with:
         scan-type: lockfile
         fail-on: high
@@ -401,7 +401,7 @@ jobs:
 #### 示例：使用策略 + SBOM 扫描特定包
 
 ```yaml
-- uses: lateos/npm-scan@main
+- uses: lateos/npm-scan@v1
   with:
     scan-type: package
     package: lodash
@@ -413,7 +413,7 @@ jobs:
 #### 示例：使用 SIEM 导出扫描（高级版）
 
 ```yaml
-- uses: lateos/npm-scan@main
+- uses: lateos/npm-scan@v1
   with:
     scan-type: lockfile
     siem-format: cef
@@ -467,7 +467,7 @@ jobs:
       with:
         node-version: 20
     - name: Scan lockfile
-      uses: lateos/npm-scan@main
+      uses: lateos/npm-scan@v1
       with:
         scan-type: lockfile
         fail-on: high
@@ -495,7 +495,7 @@ jobs:
 #### 示例：使用策略 + SBOM 扫描特定包
 
 ```yaml
-- uses: lateos/npm-scan@main
+- uses: lateos/npm-scan@v1
   with:
     scan-type: package
     package: lodash
@@ -507,7 +507,7 @@ jobs:
 #### 示例：使用 SIEM 导出扫描（高级版）
 
 ```yaml
-- uses: lateos/npm-scan@main
+- uses: lateos/npm-scan@v1
   with:
     scan-type: lockfile
     siem-format: cef
