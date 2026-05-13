@@ -8,8 +8,9 @@ import { pipeline } from 'stream/promises';
 
 export async function fetchPackage(target, options = {}) {
   const { cacheDir, cacheTTL = 604800, cacheMaxSize = 1000000000 } = options;
-  
-  // Check cache if enabled
+  const [name, version] = target.split('@').slice(1);
+  const endpoint = version ? `/${name}/v/${version}` : `/${target}/latest`;
+
   if (cacheDir) {
     const cached = getFromCache(cacheDir, target, cacheTTL);
     if (cached) {
@@ -18,7 +19,7 @@ export async function fetchPackage(target, options = {}) {
     }
   }
 
-  const metaRes = await fetch(`https://registry.npmjs.org/${target}/latest`);
+  const metaRes = await fetch(`https://registry.npmjs.org${endpoint}`);
   const meta = await metaRes.json();
 
   if (!metaRes.ok || !meta.dist?.tarball) {
