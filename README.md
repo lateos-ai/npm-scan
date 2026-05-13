@@ -43,6 +43,7 @@ Attackers have moved past simple typosquatting. They now ship **obfuscated prein
 | Transitive worm propagation (ATK-011) | ❌ | ❌ | ❌ | ✅ |
 | Attack taxonomy (ATK series) | ❌ | ❌ | ❌ | ✅ |
 | SBOM output (CycloneDX + SPDX) | ❌ | ✅ | ❌ | ✅ |
+| SARIF v2.1 (GitHub Code Scanning) | ❌ | ❌ | ❌ | ✅ |
 | NIST 800-161 compliance reporting | ❌ | ❌ | ❌ | ✅ |
 | EU CRA compliance reporting | ❌ | ❌ | ❌ | ✅ |
 | SIEM export (CEF / ECS / Sentinel / QRadar) | ❌ | ❌ | ❌ | ✅ |
@@ -61,6 +62,7 @@ Attackers have moved past simple typosquatting. They now ship **obfuscated prein
 | 🧠 | **Behavioral detection** | Identifies conditional triggers (time-based, CI-aware), sandbox evasion, and dormant activation patterns |
 | 🧬 | **ATK attack taxonomy** | 11 classified attack types with NIST 800-161 mappings — versioned, documented, and PR-able |
 | 📦 | **SBOM generation** | CycloneDX 1.5 and SPDX 2.3 with findings embedded as vulnerabilities |
+| 🔍 | **SARIF output** | GitHub Advanced Security / CodeQL compatible SARIF v2.1 — shows findings directly in Security tab |
 | 🧾 | **Compliance reporting** | NIST SP 800-161 traceability matrix + EU Cyber Resilience Act mapping (free tier) |
 | 🔌 | **SIEM export** | Splunk CEF, Elastic ECS, Microsoft Sentinel, IBM QRadar formats (premium) |
 | 📜 | **Policy-as-code** | YAML/JSON policy engine with allowlists, severity overrides, suppressions, and fail-on thresholds |
@@ -389,7 +391,7 @@ jobs:
 
 ### GitHub Action (for downstream users)
 
-Scan your project's `package-lock.json` on every PR — detects typosquats, obfuscated payloads, credential harvesters, and worm propagation before they reach production:
+Scan your project's `package-lock.json` on every PR — detects typosquats, obfuscated payloads, credential harvesters, and worm propagation before they reach production. **SARIF output shows findings directly in GitHub's Security tab (Code Scanning).**
 
 ```yaml
 # .github/workflows/scan.yml
@@ -404,14 +406,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - uses: actions/setup-node@v4
-      with:
-        node-version: 20
-    - name: Scan lockfile
-      uses: lateos/npm-scan@main
+    - uses: lateos/npm-scan@v1
       with:
         scan-type: lockfile
+        sarif: results.sarif
         fail-on: high
+    - name: Upload SARIF to Security tab
+      uses: github/codeql-action/upload-sarif@v3
+      with:
+        sarif_file: results.sarif
 ```
 
 #### Action inputs
