@@ -1,0 +1,65 @@
+name: Test npm-scan Action
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  test-action:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Test npm-scan action (lockfile)
+        id: scan-lockfile
+        uses: ./.github/actions/npm-scan
+        with:
+          scan-type: lockfile
+          fail-on: high
+          policy-file: ''
+
+      - name: Display outputs (lockfile)
+        run: |
+          echo "Findings: ${{ steps.scan-lockfile.outputs.findings-count }}"
+          echo "Risk Score: ${{ steps.scan-lockfile.outputs.risk-score }}"
+          echo "Scan ID: ${{ steps.scan-lockfile.outputs.scan-id }}"
+
+      - name: Test npm-scan action (package)
+        id: scan-package
+        uses: ./.github/actions/npm-scan
+        with:
+          scan-type: package
+          package: lodash
+          fail-on: none
+
+      - name: Display outputs (package)
+        run: |
+          echo "Findings: ${{ steps.scan-package.outputs.findings-count }}"
+          echo "Risk Score: ${{ steps.scan-package.outputs.risk-score }}"
+
+      - name: Test with SARIF output
+        id: scan-sarif
+        uses: ./.github/actions/npm-scan
+        with:
+          scan-type: package
+          package: axios
+          sarif: results.sarif
+          fail-on: none
+
+      - name: Display SARIF output
+        run: |
+          echo "SARIF Path: ${{ steps.scan-sarif.outputs.sarif-path }}"
+          ls -la results.sarif 2>/dev/null || echo "No SARIF file"
+
+      - name: Test score-only
+        id: score-only
+        uses: ./.github/actions/npm-scan
+        with:
+          scan-type: package
+          package: express
+          score-only: 'true'
+
+      - name: Display score-only output
+        run: |
+          echo "Risk Score: ${{ steps.score-only.outputs.risk-score }}"

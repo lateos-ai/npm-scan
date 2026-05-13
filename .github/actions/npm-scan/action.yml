@@ -1,0 +1,112 @@
+name: 'npm-scan Supply Chain Scanner'
+description: 'Local npm supply chain security scanner - detects malware, obfuscation, credential stealers, worms (ATK taxonomy), SARIF/SBOM output'
+author: 'Lateos <hello@lateos.ai>'
+inputs:
+  scan-type:
+    description: 'Scan type: lockfile, package, or file'
+    required: true
+    default: 'lockfile'
+  package:
+    description: 'Package name (required for scan-type=package)'
+    required: false
+    default: ''
+  fail-on:
+    description: 'Fail on severity threshold: none, low, medium, high, critical'
+    required: false
+    default: 'none'
+  policy-file:
+    description: 'Path to policy YAML/JSON file'
+    required: false
+    default: ''
+  sarif:
+    description: 'Output SARIF file path'
+    required: false
+    default: ''
+  csv:
+    description: 'Output CSV file path'
+    required: false
+    default: ''
+  sbom-format:
+    description: 'SBOM format: json, xml, spdx'
+    required: false
+    default: ''
+  license-key:
+    description: 'Premium license key (or use NPM_SCAN_LICENSE_KEY env)'
+    required: false
+    default: ''
+  score-only:
+    description: 'Output only risk score (0-10)'
+    required: false
+    default: 'false'
+outputs:
+  findings-count:
+    description: 'Number of findings detected'
+    value: ${{ steps.scan.outputs.findings-count }}
+  risk-score:
+    description: 'Risk score (0-10)'
+    value: ${{ steps.scan.outputs.risk-score }}
+  scan-id:
+    description: 'Scan ID for reference'
+    value: ${{ steps.scan.outputs.scan-id }}
+  sarif-path:
+    description: 'SARIF output file path'
+    value: ${{ steps.scan.outputs.sarif-path }}
+branding:
+  icon: 'shield-check'
+  color: 'red'
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+
+    - name: Install npm-scan
+      run: npm install -g @lateos/npm-scan
+      shell: bash
+
+    - name: Run npm-scan
+      id: scan
+      env:
+        NPM_SCAN_LICENSE_KEY: ${{ inputs.license-key }}
+      run: |
+        CMD="${{ inputs.scan-type }}"
+        [ "$CMD" = "package" ] && CMD="${{ inputs.package }}"
+        
+        ARGS="--fail-on ${{ inputs.fail-on }}"
+        
+        if [ -n "${{ inputs.policy-file }}" ]; then
+          ARGS="$ARGS --policy ${{ inputs.policy-file }}"
+        fi
+        
+        if [ -n "${{ inputs.sarif }}" ]; then
+          ARGS="$ARGS --sarif ${{ inputs.sarif }}"
+        fi
+        
+        if [ -n "${{ inputs.csv }}" ]; then
+          ARGS="$ARGS --csv ${{ inputs.csv }}"
+        fi
+        
+        if [ -n "${{ inputs.sbom-format }}" ]; then
+          ARGS="$ARGS --sbom ${{ inputs.sbom-format }}"
+        fi
+        
+        if [ "${{ inputs.score-only }}" = "true" ]; then
+          ARGS="$ARGS --score-only"
+        fi
+        
+        OUTPUT=$(npm-scan scan $CMD $ARGS 2>&1) || true
+        echo "$OUTPUT"
+        echo "$OUTPUT" > scan-output.json
+        
+        FINDINGS=$(jq -r '.findings | length // 0' scan-output.json 2>/dev/null || echo "0")
+        SCORE=$(jq -r '.riskScore // 0' scan-output.json 2>/dev/null || echo "0")
+        ID=$(jq -r '.scanId // 0' scan-output.json 2>/dev/null || echo "0")
+        
+        echo "findings-count=$FINDINGS" >> $GITHUB_OUTPUT
+        echo "risk-score=$SCORE" >> $GITHUB_OUTPUT
+        echo "scan-id=$ID" >> $GITHUB_OUTPUT
+        echo "sarif-path=${{ inputs.sarif }}" >> $GITHUB_OUTPUT
+      shell: bash
