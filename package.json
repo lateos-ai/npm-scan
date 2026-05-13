@@ -10,8 +10,9 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/lateos-ai/npm-scan.git"
+    "url": "git+https://github.com/lateos-ai/npm-scan.git"
   },
+  "readmeFilename": "README.md",
   "keywords": [
     "npm",
     "security",
