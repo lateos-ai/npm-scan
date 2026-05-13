@@ -6,7 +6,18 @@ import zlib from 'zlib';
 import { Readable } from 'stream';
 import { pipeline } from 'stream/promises';
 
-export async function fetchPackage(target) {
+export async function fetchPackage(target, options = {}) {
+  const { cacheDir, cacheTTL = 604800, cacheMaxSize = 1000000000 } = options;
+  
+  // Check cache if enabled
+  if (cacheDir) {
+    const cached = getFromCache(cacheDir, target, cacheTTL);
+    if (cached) {
+      const tmpDir = path.join(os.tmpdir(), 'npm-scan-cache-' + Date.now());
+      return { ...(await extractTarball(cached, tmpDir)), meta: null };
+    }
+  }
+
   const metaRes = await fetch(`https://registry.npmjs.org/${target}/latest`);
   const meta = await metaRes.json();
 
@@ -19,8 +30,86 @@ export async function fetchPackage(target) {
   const buffer = Buffer.from(await tarRes.arrayBuffer());
   if (buffer.length > 500 * 1024 * 1024) throw new Error('Tarball too large');
 
+  // Save to cache if enabled
+  if (cacheDir) {
+    saveToCache(cacheDir, target, buffer, cacheTTL, cacheMaxSize);
+  }
+
   const tmpDir = path.join(os.tmpdir(), 'npm-scan-' + Date.now());
   return { ...(await extractTarball(buffer, tmpDir)), meta };
+}
+
+function getFromCache(cacheDir, target, ttl) {
+  const cachePath = path.join(cacheDir, `${target.replace('/', '-')}.tgz`);
+  const metaPath = path.join(cacheDir, `${target.replace('/', '-')}.meta.json`);
+  
+  try {
+    if (!fs.existsSync(cachePath) || !fs.existsSync(metaPath)) return null;
+    
+    const meta = JSON.parse(fs.readFileSync(metaPath, 'utf8'));
+    const age = (Date.now() - meta.timestamp) / 1000;
+    
+    if (age > ttl) {
+      fs.unlinkSync(cachePath);
+      fs.unlinkSync(metaPath);
+      return null;
+    }
+    
+    return fs.readFileSync(cachePath);
+  } catch {
+    return null;
+  }
+}
+
+function saveToCache(cacheDir, target, buffer, ttl, maxSize) {
+  try {
+    if (!fs.existsSync(cacheDir)) {
+      fs.mkdirSync(cacheDir, { recursive: true });
+    }
+    
+    // Prune if needed
+    pruneCache(cacheDir, maxSize);
+    
+    const safeName = target.replace('/', '-');
+    const cachePath = path.join(cacheDir, `${safeName}.tgz`);
+    const metaPath = path.join(cacheDir, `${safeName}.meta.json`);
+    
+    fs.writeFileSync(cachePath, buffer);
+    fs.writeFileSync(metaPath, JSON.stringify({ timestamp: Date.now(), size: buffer.length }));
+  } catch (e) {
+    // Cache write failure - continue without caching
+  }
+}
+
+function pruneCache(cacheDir, maxSize) {
+  try {
+    const files = fs.readdirSync(cacheDir).filter(f => f.endsWith('.meta.json'));
+    let totalSize = 0;
+    const fileInfos = [];
+    
+    for (const f of files) {
+      const meta = JSON.parse(fs.readFileSync(path.join(cacheDir, f), 'utf8'));
+      const tarFile = f.replace('.meta.json', '.tgz');
+      const size = meta.size || 0;
+      totalSize += size;
+      fileInfos.push({ tarFile, metaFile: f, timestamp: meta.timestamp, size });
+    }
+    
+    if (totalSize > maxSize) {
+      // Sort by oldest first and remove until under limit
+      fileInfos.sort((a, b) => a.timestamp - b.timestamp);
+      for (const info of fileInfos) {
+        if (totalSize <= maxSize * 0.8) break; // Leave 20% margin
+        try {
+          fs.unlinkSync(path.join(cacheDir, info.tarFile));
+          fs.unlinkSync(path.join(cacheDir, info.metaFile));
+          totalSize -= info.size;
+        } catch {}
+      }
+    }
+  } catch {
+    // Prune failure - ignore
+  }
 }
 
 export async function scanLocalTarball(filePath) {

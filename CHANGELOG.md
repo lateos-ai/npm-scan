@@ -12,7 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `scan --sarif [file]` to output SARIF v2.1 format for GitHub Advanced Security, VS Code, Azure DevOps
 - `scan --csv [file]` and `report --csv [file]` to export tabular CSV for Excel/Sheets import
 - `scan --score-only` to output only risk score (0-10), auto-added to JSON output
-- `scan --csv [file]` and `report --csv [file]` to export tabular CSV for Excel/Sheets import
+- Government/SOC 2 features: `--audit-log`, `--fips`, `--stig`, `--cache-dir` for air-gapped/federal compliance
 
 ## [0.9.7] — 2026-05-12
 

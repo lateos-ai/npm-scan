@@ -108,6 +108,25 @@ Kein Node.js. Kein `npm install`. Keine globalen Pakete. Funktioniert auf jedem 
 
 ---
 
+## 🛡️ Behörden- & SOC 2 L2-bereit
+
+| Funktion | SOC 2 | NIST 800-161 | STIG/FedRAMP |
+|----------|-------|--------------|--------------|
+| Audit-Protokolle (--audit-log) | CC6.8 | AU-2 | ✓ |
+| FIPS-Krypto (--fips) | CC6.1 | SC-13 | ✓ |
+| STIG-Bericht (--stig) | CC7.3 | RA-5 | ✓ |
+| Offline-Cache (--cache-dir) | A1.2 | SC-8 | ✓ |
+| Sigstore-Herleitung | CC6.2 | SI-7 | ✓ |
+| SBOM (SPDX/CycloneDX) | CC7.4 | SA-10 | ✓ |
+
+```bash
+# Vollständig konformer Scan in luftdichten Umgebungen
+npm-scan scan-lockfile --cache-dir /offline/cache --audit-log /var/log/npm-scan.audit --fips
+npm-scan report --stig
+```
+
+---
+
 ## 📖 Verwendungsbeispiele
 
 ### Ein einzelnes Paket scannen

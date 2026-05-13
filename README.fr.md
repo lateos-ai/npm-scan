@@ -108,6 +108,25 @@ Pas de Node.js. Pas de `npm install`. Pas de paquets globaux. Fonctionne sur tou
 
 ---
 
+## 🛡️ Prêt pour le Gouvernement et SOC 2 L2
+
+| Fonctionnalité | SOC 2 | NIST 800-161 | STIG/FedRAMP |
+|----------------|-------|--------------|--------------|
+| Journaux d'audit (--audit-log) | CC6.8 | AU-2 | ✓ |
+| Crypto FIPS (--fips) | CC6.1 | SC-13 | ✓ |
+| Rapport STIG (--stig) | CC7.3 | RA-5 | ✓ |
+| Cache hors ligne (--cache-dir) | A1.2 | SC-8 | ✓ |
+| Provenance Sigstore | CC6.2 | SI-7 | ✓ |
+| SBOM (SPDX/CycloneDX) | CC7.4 | SA-10 | ✓ |
+
+```bash
+# Scan conforme en environnement hermétique
+npm-scan scan-lockfile --cache-dir /offline/cache --audit-log /var/log/npm-scan.audit --fips
+npm-scan report --stig
+```
+
+---
+
 ## 📖 Exemples d'utilisation
 
 ### Scanner un seul paquet

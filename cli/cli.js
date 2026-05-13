@@ -29,8 +29,23 @@ program
   .option('--sarif [file]', 'Output SARIF v2.1 format to file or stdout')
   .option('--csv [file]', 'Output CSV format to file or stdout')
   .option('--score-only', 'Output only the risk score (0-10)')
+  .option('--audit-log <file>', 'Append scan record to immutable audit log (JSONL format)')
+  .option('--fips', 'Enable FIPS 140-2/3 crypto mode (requires FIPS-enabled Node.js)')
+  .option('--cache-dir <path>', 'Cache directory for offline/air-gapped scans')
+  .option('--cache-ttl <seconds>', 'Cache TTL in seconds (default: 604800 = 7 days)', '604800')
+  .option('--cache-size <bytes>', 'Max cache size in bytes (default: 1GB)', '1000000000')
   .action(async (target, options) => {
     try {
+      if (options.fips) {
+        process.env.NODE_OPTIONS = (process.env.NODE_OPTIONS || '') + ' --enable-fips';
+      }
+
+      const fetchOptions = {
+        cacheDir: options.cacheDir,
+        cacheTTL: parseInt(options.cacheTtl || '604800'),
+        cacheMaxSize: parseInt(options.cacheSize || '1000000000')
+      };
+
       if (!target && !options.file) {
         console.error('Error: specify a package name or --file <path>');
         process.exit(1);
@@ -50,7 +65,7 @@ program
 
       const { pkgJson, jsFiles, tmpDir } = options.file
         ? await import('../backend/fetch.js').then(m => m.scanLocalTarball(options.file))
-        : await import('../backend/fetch.js').then(m => m.fetchPackage(target));
+        : await import('../backend/fetch.js').then(m => m.fetchPackage(target, fetchOptions));
       const pkgName = target || pkgJson.name || 'unknown';
       const findings = await import('../backend/detectors/index.js').then(m => m.runAll(pkgJson, jsFiles));
       const { saveScan } = await import('../backend/db.js');
@@ -106,6 +121,20 @@ program
         console.log(JSON.stringify({scanId, findings: outputFindings, blocked, riskScore}, null, 2));
       }
 
+      if (options.auditLog) {
+        const { writeFileSync, appendFileSync } = await import('fs');
+        const entry = {
+          timestamp: new Date().toISOString(),
+          command: `scan ${target || options.file}`,
+          package: pkgName,
+          version: pkgJson.version || 'latest',
+          riskScore,
+          findingsCount: outputFindings.length,
+          exitCode: 0
+        };
+        appendFileSync(options.auditLog, JSON.stringify(entry) + '\n');
+      }
+
       if (blocked) {
         console.error('Policy: scan blocked due to fail_on threshold');
         process.exit(1);
@@ -149,6 +178,7 @@ program
   .option('--csv [file]', 'CSV export to file or stdout')
   .option('--nist', 'NIST 800-161 compliance report')
   .option('--cra', 'EU CRA compliance report')
+  .option('--stig', 'STIG compliance report (DISA SRG-APP)')
   .option('--siem <format>', 'SIEM format (cef|ecs|sentinel|qradar)')
   .option('--pdf', 'PDF report (premium)')
   .option('-o, --output <path>', 'Output file path')
@@ -191,6 +221,10 @@ program
         const { generateHTML } = await import('../backend/report.js');
         const html = generateHTML(scan ? [scan] : []);
         console.log(html);
+      } else if (options.stig) {
+        const { generateSTIG } = await import('../backend/report.js');
+        const stig = generateSTIG(scan ? [scan] : []);
+        console.log(stig);
       } else {
         console.log(JSON.stringify(findings, null, 2));
       }
@@ -221,6 +255,10 @@ program
         const { generateHTML } = await import('../backend/report.js');
         const html = generateHTML(scansWithFindings);
         console.log(html);
+      } else if (options.stig) {
+        const { generateSTIG } = await import('../backend/report.js');
+        const stig = generateSTIG(scansWithFindings);
+        console.log(stig);
       } else {
         console.log('Recent scans:', JSON.stringify(scans, null, 2));
       }

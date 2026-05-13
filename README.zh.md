@@ -108,6 +108,25 @@ docker compose --profile pipeline up -d
 
 ---
 
+## 🛡️ 政府与 SOC 2 L2 就绪
+
+| 功能 | SOC 2 | NIST 800-161 | STIG/FedRAMP |
+|------|-------|--------------|--------------|
+| 审计日志 (--audit-log) | CC6.8 | AU-2 | ✓ |
+| FIPS 加密 (--fips) | CC6.1 | SC-13 | ✓ |
+| STIG 报告 (--stig) | CC7.3 | RA-5 | ✓ |
+| 离线缓存 (--cache-dir) | A1.2 | SC-8 | ✓ |
+| Sigstore 溯源 | CC6.2 | SI-7 | ✓ |
+| SBOM (SPDX/CycloneDX) | CC7.4 | SA-10 | ✓ |
+
+```bash
+# 气隙环境下的完整合规扫描
+npm-scan scan-lockfile --cache-dir /offline/cache --audit-log /var/log/npm-scan.audit --fips
+npm-scan report --stig
+```
+
+---
+
 ## 📖 使用示例
 
 ### 扫描单个包

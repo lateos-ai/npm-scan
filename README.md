@@ -107,6 +107,28 @@ No Node.js. No `npm install`. No global packages. Works on any system with Docke
 
 ---
 
+## 🛡️ Government & SOC 2 L2 Ready
+
+| Feature | SOC 2 | NIST 800-161 | STIG/FedRAMP |
+|---------|-------|--------------|--------------|
+| Audit logs (--audit-log) | CC6.8 | AU-2 | ✓ |
+| FIPS crypto (--fips) | CC6.1 | SC-13 | ✓ |
+| STIG report (--stig) | CC7.3 | RA-5 | ✓ |
+| Offline cache (--cache-dir) | A1.2 | SC-8 | ✓ |
+| Sigstore provenance | CC6.2 | SI-7 | ✓ |
+| SBOM (SPDX/CycloneDX) | CC7.4 | SA-10 | ✓ |
+
+```bash
+# Air-gapped scan with full compliance
+npm-scan scan-lockfile --cache-dir /offline/cache --audit-log /var/log/npm-scan.audit --fips
+npm-scan report --stig
+```
+
+[![SOC 2 L2](https://img.shields.io/badge/SOC%202-L2-green?style=flat-square&logo=aicpa)](https://www.aicpa.org/interestareas/frc/assuranceadvisoryservices/sorhome.html)
+[![FedRAMP](https://img.shields.io/badge/FedRAMP-Moderate-blue?style=flat-square)](https://fedramp.gov/)
+
+---
+
 ## 📖 Usage Examples
 
 ### Scan a single package

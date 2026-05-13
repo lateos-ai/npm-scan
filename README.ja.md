@@ -108,6 +108,25 @@ Node.js不要。`npm install`不要。グローバルパッケージ不要。Doc
 
 ---
 
+## 🛡️ 政府機関・SOC 2 L2 対応
+
+| 機能 | SOC 2 | NIST 800-161 | STIG/FedRAMP |
+|------|-------|--------------|--------------|
+| 監査ログ (--audit-log) | CC6.8 | AU-2 | ✓ |
+| FIPS暗号化 (--fips) | CC6.1 | SC-13 | ✓ |
+| STIGレポート (--stig) | CC7.3 | RA-5 | ✓ |
+| オフラインキャッシュ (--cache-dir) | A1.2 | SC-8 | ✓ |
+| Sigstoreプロvenes | CC6.2 | SI-7 | ✓ |
+| SBOM (SPDX/CycloneDX) | CC7.4 | SA-10 | ✓ |
+
+```bash
+# エアギャップ環境での完全なコンプライアンススキャンを実行
+npm-scan scan-lockfile --cache-dir /offline/cache --audit-log /var/log/npm-scan.audit --fips
+npm-scan report --stig
+```
+
+---
+
 ## 📖 使用例
 
 ### 単一パッケージのスキャン

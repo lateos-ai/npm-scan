@@ -220,3 +220,36 @@ export function calculateRiskScore(findings, totalPackages = 1) {
   const rawScore = findings.reduce((sum, f) => sum + (weights[f.severity] || 0), 0) / totalPackages;
   return Math.min(rawScore, 10).toFixed(1);
 }
+
+const STIG_MAP = {
+  'SRG-APP-000141': { title: 'Application Malware Detection', atk: 'ATK-001', desc: 'Lifecycle script detection' },
+  'SRG-APP-000142': { title: 'Application Code Obfuscation', atk: 'ATK-002', desc: 'Obfuscated payload detection' },
+  'SRG-APP-000143': { title: 'Credential Harvesting', atk: 'ATK-003', desc: 'Credential exfiltration detection' },
+  'SRG-APP-000144': { title: 'Persistence Mechanisms', atk: 'ATK-004', desc: 'Malicious persistence detection' },
+  'SRG-APP-000145': { title: 'Data Exfiltration', atk: 'ATK-005', desc: 'Network exfiltration detection' },
+  'SRG-APP-000146': { title: 'Dependency Confusion', atk: 'ATK-006', desc: 'Internal package detection' },
+  'SRG-APP-000147': { title: 'Typosquatting', atk: 'ATK-007', desc: 'Malicious package name detection' },
+  'SRG-APP-000148': { title: 'Tarball Tampering', atk: 'ATK-008', desc: 'Modified package detection' },
+  'SRG-APP-000149': { title: 'Dormant Triggers', atk: 'ATK-009', desc: 'Conditional execution detection' },
+  'SRG-APP-000150': { title: 'Sandbox Evasion', atk: 'ATK-010', desc: 'Environment detection evasion' },
+  'SRG-APP-000151': { title: 'Transitive Propagation', atk: 'ATK-011', desc: 'Dependency chain attacks' }
+};
+
+export function generateSTIG(scans) {
+  const rows = [];
+  for (const [stigId, info] of Object.entries(STIG_MAP)) {
+    const findings = scans.flatMap(s => (s.findings || []).filter(f => f.id === info.atk));
+    const status = findings.length > 0 ? 'NOT APPLICABLE' : 'COMPLETE';
+    const findingsList = findings.map(f => `${f.severity.toUpperCase()}: ${f.title}`).join('; ') || 'None';
+    rows.push(`| ${stigId} | ${info.title} | ${status} | ${findingsList} |`);
+  }
+  return `# STIG Compliance Report
+Generated: ${new Date().toISOString()}
+
+| STIG ID | Control Title | Status | Findings |
+|---------|--------------|--------|----------|
+${rows.join('\n')}
+
+---
+*This report maps application security controls to DISA STIG requirements.*`;
+}
