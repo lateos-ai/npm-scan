@@ -343,10 +343,9 @@ npm-scan scan target --policy .npm-scan.yml
 
 ### Premium licensing
 
-```bash
-# Generate a development key
-node -e "console.log(require('@lateos/npm-scan/backend/license').generateKey('premium'))"
+Contact leo@lateos.ai for a premium/enterprise license key.
 
+```bash
 # Use it
 npm-scan scan target --license-key <key>
 npm-scan report --pdf --license-key <key>

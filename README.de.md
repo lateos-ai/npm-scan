@@ -306,10 +306,9 @@ npm-scan scan target --policy .npm-scan.yml
 
 ### Premium-Lizenzierung
 
-```bash
-# Einen Entwicklerschlüssel generieren
-node -e "console.log(require('@lateos/npm-scan/backend/license').generateKey('premium'))"
+Kontaktieren Sie leo@lateos.ai, um einen Premium/Enterprise-Lizenzschlüssel zu erhalten.
 
+```bash
 # Verwenden
 npm-scan scan target --license-key <key>
 npm-scan report --pdf --license-key <key>

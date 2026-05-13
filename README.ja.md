@@ -302,10 +302,9 @@ npm-scan scan target --policy .npm-scan.yml
 
 ### プレミアムライセンス
 
-```bash
-# 開発用キーを生成
-node -e "console.log(require('@lateos/npm-scan/backend/license').generateKey('premium'))"
+leo@lateos.ai までお問い合わせいただき、高级版/エンタープライズ版ライセンスキーを取得してください。
 
+```bash
 # それを使用
 npm-scan scan target --license-key <key>
 npm-scan report --pdf --license-key <key>

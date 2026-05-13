@@ -306,10 +306,9 @@ npm-scan scan target --policy .npm-scan.yml
 
 ### 高级版许可
 
-```bash
-# 生成开发密钥
-node -e "console.log(require('@lateos/npm-scan/backend/license').generateKey('premium'))"
+请联系 leo@lateos.ai 获取高级版/企业版许可密钥。
 
+```bash
 # 使用它
 npm-scan scan target --license-key <key>
 npm-scan report --pdf --license-key <key>

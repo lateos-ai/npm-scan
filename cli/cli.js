@@ -7,7 +7,7 @@ function requirePremium(feature, licenseKey) {
   if (!isFeatureEnabled(feature, licenseKey)) {
     console.error(`Error: "${feature}" requires a premium license key.`);
     console.error(`  Pass --license-key <key> or set NPM_SCAN_LICENSE_KEY env var.`);
-    console.error(`  Generate a dev key: require('@lateos/npm-scan/backend/license').generateKey('premium')`);
+    console.error(`  Contact leo@lateos.ai for a premium license.`);
     process.exit(1);
   }
 }
