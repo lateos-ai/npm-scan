@@ -70,6 +70,7 @@ Attackers have moved past simple typosquatting. They now ship **obfuscated prein
 | 🐳 | **Docker + GitHub Action** | Multi-arch images, one-command Compose pipeline, PR scan action |
 | 🛡️ | **Zero telemetry** | No data leaves your machine. No cloud. No callbacks. |
 | 💾 | **Local scan history** | SQLite-backed persistence, zero external dependencies |
+| 🪝 | **Pre-commit hook** | Block threats before commit — one-liner install, scans `package-lock.json` changes |
 
 ---
 
@@ -576,6 +577,32 @@ npm-scan report --html > report.html
 #     path: report.html
 ```
 
+### Pre-commit hook
+
+Block supply chain threats **before** they reach version control — no CI required.
+
+```bash
+# One-liner install (requires Node 18+, Git)
+npx husky@latest init && npm install && npx husky add .husky/pre-commit "npx lint-staged"
+```
+
+**What it does:** On every `git commit`, lint-staged detects staged changes to `package.json` or `package-lock.json` and runs `npm-scan scan-lockfile --fail-on high`. Commits are blocked if threats are found.
+
+```bash
+$ git commit -m "bump lodash"
+✔ Preparing lint-staged configuration...
+✔ Running tasks for staged package*.json files...
+✔ npm-scan scan-lockfile --fail-on high
+  🔴 ATK-003: Credential exfiltration (DNS lookup to credentialharvest.example.com)
+  🔴 ATK-007: Typosquat detected (lodash@7.7.7)
+  ⚠ Exiting with code 1 — threat(s) found
+
+npm scan • @lateos/npm-scan v0.11.6
+error: Command failed with exit code 1.
+```
+
+Add `--no-verify` to bypass for emergencies (`git commit -m "emergency fix" --no-verify`).
+
 ### Docker
 
 See the [Docker quick-start section](#-run-lateosnpm-scan-anywhere-with-docker--zero-installation) above for pull commands, Compose pipeline, and multi-arch images.
@@ -592,6 +619,7 @@ See the [Docker quick-start section](#-run-lateosnpm-scan-anywhere-with-docker--
 - Policy-as-code engine (YAML)
 - Local SQLite scan history
 - GitHub Action
+- Pre-commit hook (husky + lint-staged)
 - Docker images + Compose pipeline
 
 ### Premium (🔐 license key)
