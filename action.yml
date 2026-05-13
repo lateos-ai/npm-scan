@@ -1,6 +1,9 @@
 name: 'npm-scan'
 description: 'Scan npm dependencies for supply chain threats using npm-scan'
 author: 'Lateos'
+branding:
+  icon: 'shield'
+  color: 'red'
 
 inputs:
   scan-type:
