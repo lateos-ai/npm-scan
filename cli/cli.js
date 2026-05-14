@@ -237,37 +237,44 @@ program
       }
     } else {
       const lockfile = options.file;
-      const { parseLockfile, generateLockfileReport } = await import('../backend/lockfile.js');
+      try {
+        const { parseLockfile, generateLockfileReport } = await import('../backend/lockfile.js');
 
-      if (!silent) console.log(`\x1b[32m✔\x1b[0m Scanning lockfile: ${lockfile}`);
+        if (!silent) console.log(`\x1b[32m✔\x1b[0m Scanning lockfile: ${lockfile}`);
 
-      const lockfileData = parseLockfile(lockfile);
-      const results = generateLockfileReport(lockfileData);
+        const lockfileData = parseLockfile(lockfile);
+        const results = generateLockfileReport(lockfileData);
 
-      if (!silent) {
-        console.log(`  Total deps: ${results.totalDependencies}`);
-        console.log(`  Lockfile version: ${results.lockfileVersion}`);
-        if (results.findings.length > 0) {
-          console.log(`\n\x1b[31m🔴\x1b[0m ${results.findings.length} finding(s) found:\n`);
-          for (const f of results.findings) {
-            const color = f.severity === 'critical' ? '\x1b[31m' : f.severity === 'high' ? '\x1b[91m' : f.severity === 'medium' ? '\x1b[33m' : '\x1b[32m';
-            console.log(`  ${color}${f.severity.toUpperCase().padEnd(8)}\x1b[0m ${f.id}: ${f.title}`);
-            console.log(`           ${f.description}`);
+        if (!silent) {
+          console.log(`  Total deps: ${results.totalDependencies}`);
+          console.log(`  Lockfile version: ${results.lockfileVersion}`);
+          if (results.findings.length > 0) {
+            console.log(`\n\x1b[31m🔴\x1b[0m ${results.findings.length} finding(s) found:\n`);
+            for (const f of results.findings) {
+              const color = f.severity === 'critical' ? '\x1b[31m' : f.severity === 'high' ? '\x1b[91m' : f.severity === 'medium' ? '\x1b[33m' : '\x1b[32m';
+              console.log(`  ${color}${f.severity.toUpperCase().padEnd(8)}\x1b[0m ${f.id}: ${f.title}`);
+              console.log(`           ${f.description}`);
+            }
+          } else {
+            console.log(`\n\x1b[32m✔\x1b[0m No threats found.`);
           }
-        } else {
-          console.log(`\n\x1b[32m✔\x1b[0m No threats found.`);
+          console.log(`\n\x1b[36mRisk Score: ${results.riskScore}/10\x1b[0m`);
         }
-        console.log(`\n\x1b[36mRisk Score: ${results.riskScore}/10\x1b[0m`);
-      }
 
-      console.log(JSON.stringify(results, null, 2));
+        console.log(JSON.stringify(results, null, 2));
 
-      if (results.findings.length > 0) {
-        const failOn = options.failOn || 'none';
-        const weights = { critical: 5, high: 4, medium: 3, low: 2, info: 1 };
-        const maxWeight = Math.max(...results.findings.map(f => weights[f.severity] || 0));
-        const failThreshold = weights[failOn] || 0;
-        if (maxWeight >= failThreshold) process.exit(1);
+        if (results.findings.length > 0) {
+          const failOn = options.failOn || 'none';
+          if (failOn !== 'none') {
+            const weights = { critical: 5, high: 4, medium: 3, low: 2, info: 1 };
+            const maxWeight = Math.max(...results.findings.map(f => weights[f.severity] || 0));
+            const failThreshold = weights[failOn] || 0;
+            if (maxWeight >= failThreshold) process.exit(1);
+          }
+        }
+      } catch (e) {
+        console.error(`Error: ${e.message}`);
+        process.exit(1);
       }
     }
   });

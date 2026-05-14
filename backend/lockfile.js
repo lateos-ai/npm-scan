@@ -95,8 +95,8 @@ export function analyzeDependencyGraph(lockfileData) {
       }
     }
 
-    if (pkg.dependencies && Object.keys(pkg.dependencies).length > 5) {
-      const transitiveCount = [...pkg.dependencies].filter(([k]) => k.includes('scope')).length;
+    if (pkg.dependencies && typeof pkg.dependencies === 'object' && Object.keys(pkg.dependencies).length > 5) {
+      const transitiveCount = Object.keys(pkg.dependencies).filter(k => k.includes('scope')).length;
       if (transitiveCount > 3) {
         findings.push({
           id: 'ATK-011',
