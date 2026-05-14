@@ -8,8 +8,20 @@ import { pipeline } from 'stream/promises';
 
 export async function fetchPackage(target, options = {}) {
   const { cacheDir, cacheTTL = 604800, cacheMaxSize = 1000000000 } = options;
-  const [name, version] = target.split('@').slice(1);
-  const endpoint = version ? `/${name}/v/${version}` : `/${target}/latest`;
+  let name, version;
+  
+  if (target.startsWith('@')) {
+    const lastAt = target.lastIndexOf('@');
+    name = target.slice(0, lastAt);
+    version = target.slice(lastAt + 1);
+    if (!version) version = undefined;
+  } else {
+    const idx = target.indexOf('@');
+    name = idx > -1 ? target.slice(0, idx) : target;
+    version = idx > -1 ? target.slice(idx + 1) : undefined;
+  }
+  
+  const endpoint = version ? `/${encodeURIComponent(name)}/${version}` : `/${encodeURIComponent(name)}/latest`;
 
   if (cacheDir) {
     const cached = getFromCache(cacheDir, target, cacheTTL);
