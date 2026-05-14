@@ -2,7 +2,7 @@
 # Deploy to your VPC: helm install -f values.byoc.yaml npm-scan ./
 
 image:
-  repository: ghcr.io/lateos/npm-scan
+  repository: lateos/npm-scan
   tag: "1.0.0"
 
 premium:

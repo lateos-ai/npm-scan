@@ -11,7 +11,7 @@
 [![Node](https://img.shields.io/badge/node-%3E%3D18-brightgreen?style=flat-square)](package.json)
 [![Tests](https://img.shields.io/badge/tests-222%20passing-brightgreen?style=flat-square)](https://github.com/lateos-ai/npm-scan)
 [![Coverage](https://img.shields.io/badge/coverage-85%25-yellowgreen?style=flat-square)](https://github.com/lateos-ai/npm-scan)
-[![Docker](https://img.shields.io/badge/docker-ghcr.io%2Flateos%2Fnpm--scan-2496ED?style=flat-square&logo=docker)](https://github.com/lateos-ai/npm-scan/pkgs/container/npm-scan)
+[![Docker](https://img.shields.io/badge/docker-lateos%2Fnpm--scan-2496ED?style=flat-square&logo=docker)](https://hub.docker.com/r/lateos/npm-scan)
 [![Sigstore](https://img.shields.io/static/v1?label=Sigstore&message=Provenance&color=green&style=flat-square&logo=sigstore)](https://github.com/lateos-ai/npm-scan/actions/workflows/publish.yml)
 
 **Moderne Lieferkettensicherheit für das npm-Ökosystem.**  
@@ -100,7 +100,7 @@ npx @lateos/npm-scan scan commander
 
 ```bash
 # Einmaligen Scan pullen und ausführen — kein Node.js oder npm erforderlich
-docker run --rm ghcr.io/lateos/npm-scan:cli scan lodash
+docker run --rm lateos/npm-scan:cli scan lodash
 
 # Vollständige Pipeline mit persistentem Speicher und Compose
 docker compose --profile pipeline up -d

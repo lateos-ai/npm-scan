@@ -2,7 +2,7 @@
 # Override per environment: helm install -f values-prod.yaml
 
 image:
-  repository: ghcr.io/lateos/npm-scan
+  repository: lateos/npm-scan
   tag: latest
   pullPolicy: Always
 

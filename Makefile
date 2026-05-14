@@ -1,6 +1,6 @@
 .PHONY: docker-build docker-push docker-up docker-down docker-test docker-clean docker-login
 
-REGISTRY=ghcr.io/lateos/npm-scan
+REGISTRY=docker.io/lateos/npm-scan
 CLI_TAG=$(REGISTRY):cli
 LOCAL_TAG=npm-scan:local
 
@@ -29,4 +29,4 @@ docker-clean:
 
 docker-login:
 	echo "Login to GHCR:"
-	@echo "  echo $$GITHUB_TOKEN | docker login ghcr.io -u $$GITHUB_USERNAME --password-stdin"
+	@echo "  echo $$DOCKERHUB_TOKEN | docker login -u $$DOCKERHUB_USERNAME --password-stdin"
