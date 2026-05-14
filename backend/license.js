@@ -78,6 +78,10 @@ export function validateLicense(key, feature = '*') {
 
 export function isFeatureEnabled(feature, licenseKey = process.env.NPM_SCAN_LICENSE_KEY) {
   try {
+    if (!licenseKey) {
+      const unlocked = feature === 'scan' || ALLOWED_UNLOCKED.includes(feature);
+      if (unlocked) return true;
+    }
     validateLicense(licenseKey, feature);
     return true;
   } catch {

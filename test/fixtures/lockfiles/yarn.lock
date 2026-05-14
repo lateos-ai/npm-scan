@@ -1,15 +1,15 @@
 lodash@^4.17.21:
   version "4.17.21"
-  resolved "https://registry.npmjs.org/lodash/-/lodash-4.17.21.tgz"
+  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.21.tgz"
   integrity sha512-Vythumb
   dependencies: {}
   dev false
-  optional false
+  optional true
 
 axios@^1.6.0:
   version "1.6.8"
-  resolved "https://registry.npmjs.org/axios/-/axios-1.6.8.tgz"
-  integrity sha512-j2xvyqwsdd456789abcdef
+  resolved "https://registry.yarnpkg.com/axios/-/axios-1.6.8.tgz"
+  integrity sha-j2xvyqwsdd456789abcdef
   dependencies:
     form-data "4.0.0"
     proxy-from-env "1.1.0"
@@ -30,6 +30,7 @@ axios@^1.6.0:
     gensync "^1.0.0-beta.2"
     json5 "^2.2.3"
     semver "^6.3.1"
+    rimraf "^3.0.2"
   dev true
   optional false
 
@@ -45,7 +46,7 @@ axios@^1.6.0:
   dev false
   optional false
 
-reakt@^18.2.0, reakt@^18.2.0::version=18.2.0:
+reakt@^18.2.0:
   version "18.2.0"
   resolved "https://registry.yarnpkg.com/reakt/-/reakt-18.2.0.tgz"
   integrity sha512-abcdabcd1234defghi
@@ -53,7 +54,7 @@ reakt@^18.2.0, reakt@^18.2.0::version=18.2.0:
   dev false
   optional true
 
-"express@npm:expres@^4.18.2", expres@^4.18.2::version=4.18.2:
+express@npm:expres@^4.18.2:
   version "4.18.2"
   resolved "https://registry.npmjs.org/expres-4.18.2.tgz"
   integrity sha512-abcdabcd1234abcdefghi
@@ -92,7 +93,7 @@ reakt@^18.2.0, reakt@^18.2.0::version=18.2.0:
   dev false
   optional false
 
-"my-scope-plugin@npm:my-scope-plugin@^1.0.0", my-scope-plugin@^1.0.0::version=1.0.0:
+"my-scope-plugin@npm:my-scope-plugin@^1.0.0":
   version "1.0.0"
   resolved "https://registry.npmjs.org/my-scope-plugin-1.0.0.tgz"
   integrity sha512-abcdefghijk123456789abcdef

@@ -146,6 +146,51 @@ test('detectors: ATK-011 self-name aware triggers medium finding', async () => {
   assert.equal(findings.find(f => f.id === 'ATK-011').severity, 'medium');
 });
 
+test('detectors: ATK-010 multi fingerprinting APIs triggers medium', async () => {
+  const files = [{ path: 'i.js', content: 'const pid = process.pid; const ppid = process.ppid; const hn = os.hostname()' }];
+  const findings = await detectors.runAll({}, files);
+  const atk10 = findings.filter(f => f.id === 'ATK-010');
+  assert(atk10.length > 0);
+  assert.equal(atk10[0].severity, 'medium');
+});
+
+test('detectors: ATK-010 stack trace with code execution triggers medium', async () => {
+  const files = [{ path: 'i.js', content: 'const e = new Error().stack; require("child_process").execSync("ls")' }];
+  const findings = await detectors.runAll({}, files);
+  assert(findings.some(f => f.id === 'ATK-010'));
+});
+
+test('detectors: ATK-010 only Error().stack without exec does not trigger', async () => {
+  const files = [{ path: 'i.js', content: 'const e = Error().stack; console.log(e)' }];
+  const findings = await detectors.runAll({}, files);
+  assert(!findings.some(f => f.id === 'ATK-010'));
+});
+
+test('detectors: ATK-010 debugger statement flagged', async () => {
+  const files = [{ path: 'i.js', content: 'debugger; //debugger' }];
+  const findings = await detectors.runAll({}, files);
+  assert(findings.some(f => f.id === 'ATK-010'));
+  assert.equal(findings.find(f => f.id === 'ATK-010').severity, 'high');
+});
+
+test('detectors: ATK-010 detect analysis keywords flagged', async () => {
+  const files = [{ path: 'i.js', content: 'if (detect("sandbox")) process.exit(0)' }];
+  const findings = await detectors.runAll({}, files);
+  assert(findings.some(f => f.id === 'ATK-010'));
+});
+
+test('detectors: ATK-010 e.stack sandbox probe flagged', async () => {
+  const files = [{ path: 'i.js', content: 'const s = e.stack; if (s.includes("sandbox")) console.log("detected")' }];
+  const findings = await detectors.runAll({}, files);
+  assert(findings.some(f => f.id === 'ATK-010'));
+});
+
+test('detectors: ATK-010 --inspect flag detection flagged', async () => {
+  const files = [{ path: 'i.js', content: 'if (process.argv.includes("--inspect")) {}' }];
+  const findings = await detectors.runAll({}, files);
+  assert(findings.some(f => f.id === 'ATK-010'));
+});
+
 test('detectors: known clean packages produce no high/critical findings', async () => {
   const cleanPkgs = [
     { scripts: { test: 'jest' }, dependencies: { express: '4.0.0' }, name: 'test' },

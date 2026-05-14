@@ -3,8 +3,8 @@
 [![npm version](https://img.shields.io/npm/v/@lateos/npm-scan?style=flat-square)](https://www.npmjs.com/package/@lateos/npm-scan)
 [![License](https://img.shields.io/badge/license-Apache%202.0%20%2B%20Commons%20Clause-blue?style=flat-square)](LICENSING.md)
 [![Node](https://img.shields.io/badge/node-%3E%3D18-brightgreen?style=flat-square)](package.json)
-[![Tests](https://img.shields.io/badge/tests-222%20passing-brightgreen?style=flat-square)](https://github.com/lateos-ai/npm-scan)
-[![Coverage](https://img.shields.io/badge/coverage-85%25-yellowgreen?style=flat-square)](https://github.com/lateos-ai/npm-scan)
+[![Tests](https://img.shields.io/badge/tests-324%20passing-brightgreen?style=flat-square)](https://github.com/lateos-ai/npm-scan)
+[![Coverage](https://img.shields.io/badge/coverage-90%25-brightgreen?style=flat-square)](https://github.com/lateos-ai/npm-scan)
 [![Docker](https://img.shields.io/badge/docker-lateos%2Fnpm--scan-2496ED?style=flat-square&logo=docker)](https://hub.docker.com/r/lateos/npm-scan)
 [![Sigstore](https://img.shields.io/static/v1?label=Sigstore&message=Provenance&color=green&style=flat-square&logo=sigstore)](https://github.com/lateos-ai/npm-scan/actions/workflows/publish.yml)
 
@@ -71,6 +71,7 @@ Attackers have moved past simple typosquatting. They now ship **obfuscated prein
 | 🛡️ | **Zero telemetry** | No data leaves your machine. No cloud. No callbacks. |
 | 💾 | **Local scan history** | SQLite-backed persistence, zero external dependencies |
 | 🪝 | **Pre-commit hook** | Block threats before commit — one-liner install, scans `package-lock.json` changes |
+| 📎 | **Yarn + pnpm support** | `scan-lockfile` parses `yarn.lock` and `pnpm-lock.yaml` alongside `package-lock.json` |
 
 ---
 
@@ -190,11 +191,15 @@ npm-scan scan --file path/to/malicious-package.tgz
 ### Scan a lockfile
 
 ```bash
-# Scan the current project's dependencies
+# Scan the current project's dependencies (auto-detects npm/yarn/pnpm)
 npm-scan scan-lockfile
 
 # Scan a specific lockfile
 npm-scan scan-lockfile -f ./path/to/package-lock.json
+
+# Scan yarn.lock or pnpm-lock.yaml
+npm-scan scan-lockfile -f ./yarn.lock --yarn
+npm-scan scan-lockfile -f ./pnpm-lock.yaml --pnpm
 
 # Fail CI/CD on high or critical findings (exit code 1)
 npm-scan scan-lockfile --fail-on high
@@ -211,7 +216,7 @@ npm-scan scan-lockfile --watch
 # Watch with faster debounce (500ms) — great for dev workflows
 npm-scan scan-lockfile --watch --debounce 500
 
-# Watch monorepo (all package-lock.json files in workspace)
+# Watch monorepo (all lockfiles — npm/yarn/pnpm — in workspace)
 npm-scan scan-lockfile --watch --monorepo
 
 # Output only risk score (0-10) for dashboards/thresholds
@@ -686,8 +691,12 @@ node --test test/detectors-corpus.test.js
 - `test/detectors-corpus.test.js` — 33 malicious + 50 clean tarball integration (offline)
 - `test/fetch.test.js` — tarball extraction, temp directory cleanup
 - `test/policy-edge-cases.test.js` — edge cases in suppress, override, load validation
+- `test/policy.test.js` — policy YAML/JSON load, apply, suppress, severity override tests
 - `test/report-snapshots.test.js` — HTML/text/CRA/PDF format assertions
+- `test/report.test.js` — SARIF, CSV, STIG, risk score format tests
+- `test/lockfile.test.js` — npm/yarn/pnpm parser, auto-detect, ATK-007/011 lockfile tests
 - `test/cli.test.js` — commander integration tests (help, version, scan, report, error handling)
+- `test/cli-lockfile.test.js` — scan-lockfile CLI options, yarn/pnpm/monorepo/watch tests
 
 ### Need help?
 

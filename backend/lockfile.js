@@ -126,10 +126,10 @@ function parseYarnLockfile(content, filePath) {
         if (bodyTrim.startsWith('version ')) {
           const vMatch = bodyTrim.match(/^version ['"]([^'"]+)['"]/);
           if (vMatch) version = vMatch[1];
-        } else if (bodyTrim.startsWith('resolved ')) {
-          const rMatch = bodyTrim.match(/^resolved ['"]([^'"]+)['"]/);
+        } else if (bodyTrim.match(/^\s*resolved\s+(.+)/)) {
+          const rMatch = bodyTrim.match(/^\s*resolved\s+(.+)/);
           if (rMatch) {
-            resolved = rMatch[1];
+            resolved = rMatch[1].trim().replace(/^['"]|['"]$/g, '');
             if (resolved.startsWith('https://registry.yarnpkg.com/')) {
               resolved = resolved.replace('https://registry.yarnpkg.com/', 'https://registry.npmjs.org/');
             }

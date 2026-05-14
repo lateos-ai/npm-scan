@@ -172,13 +172,201 @@ test('SBOM with no findings', async () => {
 
 // ─── License Key Validation ────────────────────────────────────────
 
+test('license validateLicense throws on no key', async () => {
+  const m = await import('./license.js');
+  try {
+    m.validateLicense(null, 'siem');
+    assert.fail('should throw');
+  } catch (e) {
+    assert(e.message.includes('No license'));
+  }
+});
+
+test('license validateLicense throws on empty key', async () => {
+  const m = await import('./license.js');
+  try {
+    m.validateLicense('', 'siem');
+    assert.fail('should throw');
+  } catch (e) {
+    assert(e.message.includes('No license'));
+  }
+});
+
+test('license validateLicense throws on malformed key', async () => {
+  const m = await import('./license.js');
+  try {
+    m.validateLicense('not-a-valid-key', 'siem');
+    assert.fail('should throw');
+  } catch (e) {
+    assert(e.message.includes('Invalid'));
+  }
+});
+
+test('license validateLicense throws on unknown edition', async () => {
+  const m = await import('./license.js');
+  const key = m.generateKey('premium');
+  const tampered = key.replace('premium', 'superpremium');
+  try {
+    m.validateLicense(tampered, '*');
+    assert.fail('should throw');
+  } catch (e) {
+    assert(e.message.includes('Unknown'));
+  }
+});
+
+test('license validateLicense throws on feature requiring higher edition', async () => {
+  const m = await import('./license.js');
+  const key = m.generateKey('premium');
+  try {
+    m.validateLicense(key, 'sso');
+    assert.fail('should throw');
+  } catch (e) {
+    assert(e.message.includes('enterprise'));
+  }
+});
+
+test('license generateKey with custom seats and org', async () => {
+  const m = await import('./license.js');
+  const key = m.generateKey('premium', { seats: 50, org: 'Acme Corp' });
+  const result = m.validateLicense(key, 'siem');
+  assert.equal(result.seats, 50);
+  assert.equal(result.org, 'Acme Corp');
+});
+
+test('license isFeatureEnabled returns true for valid community scan', async () => {
+  const m = await import('./license.js');
+  const prev = process.env.NPM_SCAN_LICENSE_KEY;
+  process.env.NPM_SCAN_LICENSE_KEY = '';
+  const result = m.isFeatureEnabled('scan', '');
+  if (prev) process.env.NPM_SCAN_LICENSE_KEY = prev;
+  else delete process.env.NPM_SCAN_LICENSE_KEY;
+  assert.equal(result, true);
+});
+
+test('license validateLicense community features via isFeatureEnabled', async () => {
+  const m = await import('./license.js');
+  const prev = process.env.NPM_SCAN_LICENSE_KEY;
+  process.env.NPM_SCAN_LICENSE_KEY = '';
+  assert.equal(m.isFeatureEnabled('scan', ''), true);
+  assert.equal(m.isFeatureEnabled('nist-html', ''), true);
+  if (prev) process.env.NPM_SCAN_LICENSE_KEY = prev;
+  else delete process.env.NPM_SCAN_LICENSE_KEY;
+});
+
+test('license isFeatureEnabled returns false for missing premium key', async () => {
+  const m = await import('./license.js');
+  const prev = process.env.NPM_SCAN_LICENSE_KEY;
+  delete process.env.NPM_SCAN_LICENSE_KEY;
+  assert.equal(m.isFeatureEnabled('siem', null), false);
+  if (prev) process.env.NPM_SCAN_LICENSE_KEY = prev;
+});
+
+test('license reject tampered key', async () => {
+  const m = await import('./license.js');
+  const key = m.generateKey('premium');
+  const tampered = key.slice(0, -10) + 'ffffffffffffffff';
+  try {
+    m.validateLicense(tampered, '*');
+    assert.fail('should throw');
+  } catch (e) {
+    assert(e.message.includes('signature'));
+  }
+});
+
+test('license reject expired key', async () => {
+  const m = await import('./license.js');
+  const key = m.generateKey('premium', { expiresAt: '2020-01-01T00:00:00Z' });
+  try {
+    m.validateLicense(key, '*');
+    assert.fail('should throw');
+  } catch (e) {
+    assert(e.message.includes('expired'));
+  }
+});
+
 test('license generateKey produces valid format', async () => {
   const m = await import('./license.js');
   const key = m.generateKey('premium');
   assert(key.startsWith('npm-scan-premium-'), 'premium key prefix');
-  assert(key.includes('.'), 'contains signature separator');
-  const parts = key.split('.');
-  assert.equal(parts.length, 2, 'payload.signature');
+  const parts = key.split('-');
+  assert(parts.length >= 4, 'has at least 4 parts');
+  assert(key.includes('.'), 'has signature dot separator');
+});
+
+test('license validateLicense community features via isFeatureEnabled', async () => {
+  const m = await import('./license.js');
+  assert.equal(m.isFeatureEnabled('scan', null), true);
+  assert.equal(m.isFeatureEnabled('scan', undefined), true);
+  assert.equal(m.isFeatureEnabled('nist-html', null), true);
+});
+
+test('license validateLicense with valid premium key', async () => {
+  const m = await import('./license.js');
+  const key = m.generateKey('premium');
+  const result = m.validateLicense(key, 'siem');
+  assert.equal(result.edition, 'premium');
+});
+
+test('license validateLicense enterprise key', async () => {
+  const m = await import('./license.js');
+  const key = m.generateKey('enterprise');
+  const result = m.validateLicense(key, 'sso');
+  assert.equal(result.edition, 'enterprise');
+});
+
+test('license isFeatureEnabled with valid key', async () => {
+  const m = await import('./license.js');
+  const key = m.generateKey('premium');
+  assert.equal(m.isFeatureEnabled('siem', key), true);
+});
+
+test('license isFeatureEnabled enterprise-only feature blocked on premium', async () => {
+  const m = await import('./license.js');
+  const premiumKey = m.generateKey('premium');
+  assert.equal(m.isFeatureEnabled('sso', premiumKey), false);
+});
+
+test('license reject invalid key format', async () => {
+  const m = await import('./license.js');
+  try {
+    m.validateLicense('npm-scan', '*');
+    assert.fail('should throw');
+  } catch (e) {
+    assert(e.message.includes('Invalid'));
+  }
+});
+
+test('license reject empty key', async () => {
+  const m = await import('./license.js');
+  try {
+    m.validateLicense('', '*');
+    assert.fail('should throw');
+  } catch (e) {
+    assert(e.message.includes('No license'));
+  }
+});
+
+test('license reject tampered key', async () => {
+  const m = await import('./license.js');
+  const key = m.generateKey('premium');
+  const tampered = key.slice(0, -10) + 'ffffffffffffffff';
+  try {
+    m.validateLicense(tampered, '*');
+    assert.fail('should throw');
+  } catch (e) {
+    assert(e.message.includes('signature'));
+  }
+});
+
+test('license reject expired key', async () => {
+  const m = await import('./license.js');
+  const key = m.generateKey('premium', { expiresAt: '2020-01-01T00:00:00Z' });
+  try {
+    m.validateLicense(key, '*');
+    assert.fail('should throw');
+  } catch (e) {
+    assert(e.message.includes('expired'));
+  }
 });
 
 test('license validateLicense community features', async () => {
