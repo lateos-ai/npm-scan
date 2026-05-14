@@ -3,7 +3,7 @@ name: Publish with Provenance
 on:
   push:
     tags:
-      - 'v*.*.*'
+      - 'v[0-9]*'
 
 permissions:
   id-token: write
