@@ -1,0 +1,103 @@
+lodash@^4.17.21:
+  version "4.17.21"
+  resolved "https://registry.npmjs.org/lodash/-/lodash-4.17.21.tgz"
+  integrity sha512-Vythumb
+  dependencies: {}
+  dev false
+  optional false
+
+axios@^1.6.0:
+  version "1.6.8"
+  resolved "https://registry.npmjs.org/axios/-/axios-1.6.8.tgz"
+  integrity sha512-j2xvyqwsdd456789abcdef
+  dependencies:
+    form-data "4.0.0"
+    proxy-from-env "1.1.0"
+  dev false
+  optional false
+
+"@babel/core@^7.23.0", "@babel/core@^7.23.9":
+  version "7.23.9"
+  resolved "https://registry.yarnpkg.com/@babel/core/-/core-7.23.9.tgz"
+  integrity sha512-5q+M1iEJCOrGJs9NxzG3p3z7w2cJK/QuoRoI2pOJhtcNQjl9y7w6w4At5ZQHZdwqd+5N5G1lULu7I6pXVBw==
+  dependencies:
+    "@babel/generator" "^7.23.6"
+    "@babel/parser" "^7.23.9"
+    "@babel/traverse" "^7.23.9"
+    "@babel/types" "^7.23.9"
+    convert-source-map "^2.0.0"
+    debug "^4.1.0"
+    gensync "^1.0.0-beta.2"
+    json5 "^2.2.3"
+    semver "^6.3.1"
+  dev true
+  optional false
+
+"@babel/generator@^7.23.6", "@babel/generator@^7.23.9":
+  version "7.23.6"
+  resolved "https://registry.yarnpkg.com/@babel/generator/-/generator-7.23.6.tgz"
+  integrity sha512-56bfx9G1AJAFDl5QuK6t7MTCW3CBi7J8j+GxJJPvZ7L1f4P2FG8f9dBiH8Hg4U5Gcb6Bi4Y8DQ8x0j8b1QE8w==
+  dependencies:
+    "@babel/types" "^7.23.6"
+    "@jridgewell/gen-mapping" "^0.3.2"
+    "@jridgewell/trace-mapping" "^0.3.17"
+    jsesc "^2.5.1"
+  dev false
+  optional false
+
+reakt@^18.2.0, reakt@^18.2.0::version=18.2.0:
+  version "18.2.0"
+  resolved "https://registry.yarnpkg.com/reakt/-/reakt-18.2.0.tgz"
+  integrity sha512-abcdabcd1234defghi
+  dependencies: []
+  dev false
+  optional true
+
+"express@npm:expres@^4.18.2", expres@^4.18.2::version=4.18.2:
+  version "4.18.2"
+  resolved "https://registry.npmjs.org/expres-4.18.2.tgz"
+  integrity sha512-abcdabcd1234abcdefghi
+  dependencies:
+    accepts "~1.3.8"
+    array-flatten "1.1.1"
+    body-parser "1.20.2"
+    content-disposition "0.5.4"
+    content-type "~1.0.5"
+    cookie "0.5.0"
+    cookie-signature "1.0.6"
+    debug "2.6.9"
+    depd "2.0.0"
+    encodeurl "~1.0.2"
+    escape-html "~1.0.3"
+    etag "~1.8.1"
+    finalhandler "1.2.0"
+    fresh "0.5.2"
+    http-errors "2.0.0"
+    merge-descriptors "1.0.1"
+    methods "~1.1.2"
+    on-finished "2.4.1"
+    parseurl "~1.3.3"
+    path-to-regexp "0.1.7"
+    proxy-addr "~2.0.7"
+    qs "6.11.0"
+    range-parser "~1.2.1"
+    safe-buffer "5.2.1"
+    send "0.18.0"
+    serve-static "1.15.0"
+    setprototypeof "1.2.0"
+    statuses "2.0.1"
+    type-is "~1.6.18"
+    utils-merge "1.0.1"
+    vary "~1.1.2"
+  dev false
+  optional false
+
+"my-scope-plugin@npm:my-scope-plugin@^1.0.0", my-scope-plugin@^1.0.0::version=1.0.0:
+  version "1.0.0"
+  resolved "https://registry.npmjs.org/my-scope-plugin-1.0.0.tgz"
+  integrity sha512-abcdefghijk123456789abcdef
+  dependencies:
+    lodash "^4.17.21"
+    axios "^1.6.0"
+  dev false
+  optional false

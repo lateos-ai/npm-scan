@@ -1,47 +1,265 @@
 import { readFileSync } from 'fs';
 import { resolve, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import yaml from 'js-yaml';
 
-export function parseLockfile(filePath) {
+export function parseLockfile(filePath, options = {}) {
+  const { autoDetect = false } = options;
   try {
     const content = readFileSync(filePath, 'utf8');
-    const lockfile = JSON.parse(content);
-    const packages = [];
+    const ext = filePath.split('.').pop().toLowerCase();
 
-    if (lockfile.packages) {
-      for (const [key, pkg] of Object.entries(lockfile.packages)) {
-        if (key === '') continue;
-        const name = pkg.name || key.replace(/^node_modules\//, '').replace(/^[^/]+\//, '');
-        packages.push({
-          name,
-          version: pkg.version || 'unknown',
-          resolved: pkg.resolved || '',
-          integrity: pkg.integrity || '',
-          path: key,
-          peerDeps: pkg.peerDependencies || {},
-          dev: pkg.dev || false,
-          optional: pkg.optional || false,
-          scripts: pkg.scripts || {},
-          dependencies: pkg.dependencies || {}
-        });
+    if (ext === 'json' || ext === 'jsonc') {
+      return parseNpmLockfile(content, filePath);
+    }
+    if (ext === 'lock' && !autoDetect) {
+      return parseYarnLockfile(content, filePath);
+    }
+    if (ext === 'yaml' || ext === 'yml') {
+      return parsePnpmLockfile(content, filePath);
+    }
+
+    if (autoDetect) {
+      if (content.trimStart().startsWith('{')) {
+        return parseNpmLockfile(content, filePath);
+      }
+      if (content.includes('__metadata')) {
+        return parsePnpmLockfile(content, filePath);
+      }
+      if (content.includes('@npm:') || /^\s*"?[\w@/-]+['"]?\s*,\s*$/m.test(content)) {
+        return parseYarnLockfile(content, filePath);
       }
     }
 
-    const rootDeps = lockfile.packages?.['node_modules/'] || {};
-    return {
-      version: lockfile.lockfileVersion,
-      packages,
-      root: {
-        name: rootDeps.name || 'unknown',
-        version: rootDeps.version || 'unknown',
-        dependencies: rootDeps.dependencies || {},
-        devDependencies: rootDeps.devDependencies || {},
-        peerDependencies: rootDeps.peerDependencies || {}
-      }
-    };
+    return parseNpmLockfile(content, filePath);
   } catch (e) {
     throw new Error(`Failed to parse lockfile: ${e.message}`);
   }
+}
+
+function parseNpmLockfile(content, filePath) {
+  const lockfile = JSON.parse(content);
+  const packages = [];
+
+  if (lockfile.packages) {
+    for (const [key, pkg] of Object.entries(lockfile.packages)) {
+      if (key === '') continue;
+      const name = pkg.name || key.replace(/^node_modules\//, '').replace(/^[^/]+\//, '');
+      packages.push({
+        name,
+        version: pkg.version || 'unknown',
+        resolved: pkg.resolved || '',
+        integrity: pkg.integrity || '',
+        path: key,
+        peerDeps: pkg.peerDependencies || {},
+        dev: pkg.dev || false,
+        optional: pkg.optional || false,
+        scripts: pkg.scripts || {},
+        dependencies: pkg.dependencies || {}
+      });
+    }
+  }
+
+  const rootDeps = lockfile.packages?.['node_modules/'] || {};
+  return {
+    version: lockfile.lockfileVersion,
+    packages,
+    root: {
+      name: rootDeps.name || 'unknown',
+      version: rootDeps.version || 'unknown',
+      dependencies: rootDeps.dependencies || {},
+      devDependencies: rootDeps.devDependencies || {},
+      peerDependencies: rootDeps.peerDependencies || {}
+    }
+  };
+}
+
+function parseYarnLockfile(content, filePath) {
+  const packages = [];
+  const lines = content.split('\n');
+  let i = 0;
+  const n = lines.length;
+
+  const MULTI_ENTRY_RE = /^"?([\w@./-]+)@(\^?[\w.+\-~]+)"?\s*,\s*"?([\w@./-]+)@(\^?[\w.+\-~]+)"?\s*:\s*$/;
+  const SINGLE_ENTRY_RE = /^"?([\w@./-]+)@(\^?[\w.+\-~]+)"?\s*:\s*$/;
+
+  while (i < n) {
+    let line = lines[i].trimEnd();
+
+    let specs = [];
+
+    const multiMatch = line.match(MULTI_ENTRY_RE);
+    const singleMatch = line.match(SINGLE_ENTRY_RE);
+
+    if (multiMatch) {
+      specs = [
+        { name: multiMatch[1], specVersion: multiMatch[2] },
+        { name: multiMatch[3], specVersion: multiMatch[4] }
+      ];
+    } else if (singleMatch) {
+      specs = [{ name: singleMatch[1], specVersion: singleMatch[2] }];
+    }
+
+    if (specs.length > 0) {
+      let version = '';
+      let resolved = '';
+      let integrity = '';
+      const dependencies = {};
+      const optionalDependencies = {};
+      const peerDependencies = {};
+      let dev = false;
+      let optional = false;
+
+      i++;
+      while (i < n) {
+        const bodyLine = lines[i];
+        const bodyTrim = bodyLine.trimEnd();
+
+        if (bodyTrim === '' || bodyTrim.startsWith('#')) {
+          i++;
+          continue;
+        }
+
+        if (bodyTrim.endsWith(':') && !bodyLine.startsWith(' ')) {
+          break;
+        }
+
+        if (bodyTrim.startsWith('version ')) {
+          const vMatch = bodyTrim.match(/^version ['"]([^'"]+)['"]/);
+          if (vMatch) version = vMatch[1];
+        } else if (bodyTrim.startsWith('resolved ')) {
+          const rMatch = bodyTrim.match(/^resolved ['"]([^'"]+)['"]/);
+          if (rMatch) {
+            resolved = rMatch[1];
+            if (resolved.startsWith('https://registry.yarnpkg.com/')) {
+              resolved = resolved.replace('https://registry.yarnpkg.com/', 'https://registry.npmjs.org/');
+            }
+          }
+        } else if (bodyTrim.startsWith('integrity ')) {
+          integrity = bodyTrim.replace('integrity ', '').trim();
+        } else if (bodyTrim.startsWith('dependencies')) {
+          const m = bodyTrim.match(/^dependencies\s+(.*)/);
+          if (m) parseDepList(m[1], dependencies);
+        } else if (bodyTrim.startsWith('optionalDependencies')) {
+          const m = bodyTrim.match(/^optionalDependencies\s+(.*)/);
+          if (m) parseDepList(m[1], optionalDependencies);
+        } else if (bodyTrim.startsWith('peerDependencies')) {
+          const m = bodyTrim.match(/^peerDependencies\s+(.*)/);
+          if (m) parseDepList(m[1], peerDependencies);
+        } else if (bodyTrim.match(/^\s*dev\s+(true|false)$/)) {
+          dev = bodyTrim.includes('true');
+        } else if (bodyTrim.match(/^\s*optional\s+(true|false)$/)) {
+          optional = bodyTrim.includes('true');
+        }
+
+        i++;
+      }
+
+      for (const { name, specVersion } of specs) {
+        packages.push({
+          name,
+          version: version || specVersion,
+          resolved,
+          integrity,
+          path: `node_modules/${name}`,
+          peerDeps: peerDependencies,
+          dev,
+          optional,
+          scripts: {},
+          dependencies,
+          optionalDependencies
+        });
+      }
+    } else {
+      i++;
+    }
+  }
+
+  const rootDeps = {};
+  const rootDevDeps = {};
+
+  for (const pkg of packages) {
+    const topDeps = pkg.dev ? rootDevDeps : rootDeps;
+    for (const depName of Object.keys(pkg.dependencies)) {
+      topDeps[depName] = pkg.dependencies[depName];
+    }
+  }
+
+  return {
+    version: 2,
+    packages,
+    root: {
+      name: 'root',
+      version: 'unknown',
+      dependencies: rootDeps,
+      devDependencies: rootDevDeps,
+      peerDependencies: {}
+    }
+  };
+}
+
+function parseDepList(str, dest) {
+  const cleaned = str.replace(/^[[\]]/g, '').trim();
+  if (!cleaned) return;
+  const re = /([\w@./-]+)\s+\^?([\w@./-]+)/g;
+  let m;
+  while ((m = re.exec(cleaned)) !== null) {
+    dest[m[1]] = m[2];
+  }
+}
+
+function parsePnpmLockfile(content, filePath) {
+  const lockfile = yaml.load(content);
+  const packages = [];
+
+  if (lockfile.packages) {
+    for (const [key, pkg] of Object.entries(lockfile.packages)) {
+      const nameMatch = key.match(/^\/(.+?)@([^@/]+)$/);
+      if (!nameMatch) continue;
+      const name = nameMatch[1];
+      const version = nameMatch[2];
+
+      const resolved = pkg.resolution?.url || '';
+      let integrity = '';
+      if (pkg.resolution?.integrity) {
+        integrity = pkg.resolution.integrity;
+      } else if (pkg.resolution?.sha512) {
+        integrity = `sha512-${pkg.resolution.sha512}`;
+      }
+
+      packages.push({
+        name,
+        version,
+        resolved,
+        integrity,
+        path: `node_modules/${name}`,
+        peerDeps: pkg.peerDependencies || {},
+        dev: pkg.dev || false,
+        optional: pkg.optional || false,
+        scripts: pkg.hasBundledMedia ? { bundled: true } : {},
+        dependencies: pkg.dependencies || {},
+        optionalDependencies: pkg.optionalDependencies || {}
+      });
+    }
+  }
+
+  const rootDeps = lockfile.importers?.['.'] || lockfile.root || {};
+  const rootDepsMap = rootDeps.dependencies || {};
+  const rootDevDepsMap = rootDeps.devDependencies || {};
+  const rootPeerDepsMap = rootDeps.peerDependencies || {};
+
+  const version = lockfile.version || (lockfile.lockfileVersion ?? 6);
+
+  return {
+    version,
+    packages,
+    root: {
+      name: 'root',
+      version: lockfile.lockfileVersion ? 'unknown' : 'unknown',
+      dependencies: rootDepsMap,
+      devDependencies: rootDevDepsMap,
+      peerDependencies: rootPeerDepsMap
+    }
+  };
 }
 
 export function checkMaliciousPatterns(pkg) {
@@ -96,7 +314,7 @@ export function analyzeDependencyGraph(lockfileData) {
     }
 
     if (pkg.dependencies && typeof pkg.dependencies === 'object' && Object.keys(pkg.dependencies).length > 5) {
-      const transitiveCount = Object.keys(pkg.dependencies).filter(k => k.includes('scope')).length;
+      const transitiveCount = Object.keys(pkg.dependencies).filter(k => k.includes('/')).length;
       if (transitiveCount > 3) {
         findings.push({
           id: 'ATK-011',
@@ -106,6 +324,16 @@ export function analyzeDependencyGraph(lockfileData) {
           evidence: `heavy transitive dep chain: ${pkg.name}`
         });
       }
+    }
+
+    if (pkg.optionalDependencies && Object.keys(pkg.optionalDependencies).length > 10) {
+      findings.push({
+        id: 'ATK-011',
+        severity: 'low',
+        title: 'Transitive propagation (worm)',
+        description: `Package "${pkg.name}" has excessive optional dependencies (${Object.keys(pkg.optionalDependencies).length})`,
+        evidence: `optional dep chain: ${pkg.name} -> [${Object.keys(pkg.optionalDependencies).slice(0, 3).join(', ')}, ...]`
+      });
     }
   }
 

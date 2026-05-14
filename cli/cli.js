@@ -163,7 +163,7 @@ program
 
 program
   .command('scan-lockfile')
-  .description('Scan package-lock.json')
+  .description('Scan package lockfile (npm/yarn/pnpm)')
   .option('-f, --file <path>', 'lockfile path', 'package-lock.json')
   .option('--fail-on <level>', 'Exit with code 1 if findings >= level (low|medium|high|critical)', 'none')
   .option('--csv [file]', 'Output CSV format to file or stdout')
@@ -171,43 +171,46 @@ program
   .option('--watch', 'Watch for changes and re-scan automatically')
   .option('--debounce <ms>', 'Debounce delay in ms before rescanning (default: 1000)', '1000')
   .option('--silent', 'Suppress stdout output (useful for piping)')
-  .option('--monorepo', 'Scan all package-lock.json files in workspace')
+  .option('--monorepo', 'Scan all lockfiles in workspace (auto-detect type)')
+  .option('--yarn', 'Force yarn.lock format')
+  .option('--pnpm', 'Force pnpm-lock.yaml format')
   .action(async (options) => {
     const silent = options.silent;
     const debounce = parseInt(options.debounce, 10) || 1000;
     const isWatch = options.watch;
     const isMonorepo = options.monorepo;
 
-    if (isWatch) {
-      if (isMonorepo) {
-        const lockfiles = await glob('**/package-lock.json', { ignore: 'node_modules/**' });
+      if (isWatch) {
+        if (isMonorepo) {
+          const lockfiles = await glob('**/{package-lock.json,yarn.lock,pnpm-lock.yaml}', { ignore: 'node_modules/**' });
 
-        if (!silent) {
-          console.log(`\x1b[32m✔\x1b[0m npm-scan watch mode (monorepo) — ${lockfiles.length} lockfiles`);
-          console.log(`  Debounce: ${debounce}ms | Press Ctrl+C to stop\n`);
-        }
+          if (!silent) {
+            console.log(`\x1b[32m✔\x1b[0m npm-scan watch mode (monorepo) — ${lockfiles.length} lockfiles`);
+            console.log(`  Debounce: ${debounce}ms | Press Ctrl+C to stop\n`);
+          }
 
-        let timers = {};
-        for (const lf of lockfiles) {
-          if (!silent) console.log(`  Watching: ${lf}`);
-          const watcher = watch(lf, (eventType) => {
-            if (eventType !== 'change') return;
-            clearTimeout(timers[lf]);
-            timers[lf] = setTimeout(() => {
-              if (!silent) {
-                console.log(`\n\x1b[90m[${new Date().toLocaleTimeString()}]\x1b[0m ${lf} changed — scanning...`);
-              }
-              try {
-                execSync(`node cli/cli.js scan-lockfile -f "${lf}" --fail-on ${options.failOn || 'high'} --silent`, { stdio: silent ? 'ignore' : 'inherit' });
-              } catch (e) {}
-            }, debounce);
+          let timers = {};
+          for (const lf of lockfiles) {
+            if (!silent) console.log(`  Watching: ${lf}`);
+            const watcher = watch(lf, (eventType) => {
+              if (eventType !== 'change') return;
+              clearTimeout(timers[lf]);
+              timers[lf] = setTimeout(() => {
+                if (!silent) {
+                  console.log(`\n\x1b[90m[${new Date().toLocaleTimeString()}]\x1b[0m ${lf} changed — scanning...`);
+                }
+                const lockType = lf.includes('yarn') ? '--yarn' : lf.includes('pnpm') ? '--pnpm' : '';
+                try {
+                  execSync(`node cli/cli.js scan-lockfile -f "${lf}" --fail-on ${options.failOn || 'high'} --silent ${lockType}`, { stdio: silent ? 'ignore' : 'inherit' });
+                } catch (e) {}
+              }, debounce);
+            });
+          }
+
+          process.on('SIGINT', () => {
+            if (!silent) console.log('\n\x1b[33m✖\x1b[0m Stopped.');
+            process.exit(0);
           });
-        }
-
-        process.on('SIGINT', () => {
-          if (!silent) console.log('\n\x1b[33m✖\x1b[0m Stopped.');
-          process.exit(0);
-        });
       } else {
         const lockfile = options.file;
         let lastSize = 0;
@@ -242,7 +245,7 @@ program
 
         if (!silent) console.log(`\x1b[32m✔\x1b[0m Scanning lockfile: ${lockfile}`);
 
-        const lockfileData = parseLockfile(lockfile);
+        const lockfileData = parseLockfile(lockfile, { autoDetect: !options.yarn && !options.pnpm });
         const results = generateLockfileReport(lockfileData);
 
         if (!silent) {

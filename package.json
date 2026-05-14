@@ -34,7 +34,9 @@
     "corpus": "node tests/corpus/run.js"
   },
   "lint-staged": {
-    "**/package{,-lock}.json": "node cli/cli.js scan-lockfile --fail-on high"
+    "**/package{,-lock}.json": "node cli/cli.js scan-lockfile --fail-on high",
+    "**/yarn.lock": "node cli/cli.js scan-lockfile --fail-on high --yarn",
+    "**/pnpm-lock.yaml": "node cli/cli.js scan-lockfile --fail-on high --pnpm"
   },
   "publishConfig": {
     "access": "public"
