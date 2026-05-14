@@ -1,0 +1,32 @@
+{
+  "name": "shai-hulud-test",
+  "version": "2.0.0",
+  "lockfileVersion": 3,
+  "packages": {
+    "": {
+      "name": "shai-hulud-test",
+      "version": "2.0.0",
+      "dependencies": {
+        "shai-hulud-plugin": "^1.0.0"
+      }
+    },
+    "node_modules/shai-hulud-plugin": {
+      "version": "1.0.0",
+      "resolved": "https://registry.npmjs.org/shai-hulud-plugin/-/shai-hulud-plugin-1.0.0.tgz",
+      "integrity": "sha512-test",
+      "peerDependencies": {
+        "shai-hulud-ext": "*"
+      }
+    },
+    "node_modules/shai-hulud-ext": {
+      "version": "2.0.0",
+      "resolved": "https://registry.npmjs.org/shai-hulud-ext/-/shai-hulud-ext-2.0.0.tgz",
+      "integrity": "sha512-test2"
+    },
+    "node_modules/lodash": {
+      "version": "4.17.21",
+      "resolved": "https://registry.npmjs.org/lodash/-/lodash-4.17.21.tgz",
+      "integrity": "sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg=="
+    }
+  }
+}
