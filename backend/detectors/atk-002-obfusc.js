@@ -1,3 +1,45 @@
+const DIST_BUILD_PATTERNS = [/\/dist\//, /\/build\//, /\/bundle/, /\/min\//, /\.min\.js$/, /\.bundled?\.js$/];
+const TEST_FIXTURE_PATTERNS = [/\/test\//, /\/tests\//, /\/__tests__\//, /\/spec\//, /\.test\.js$/, /\.spec\.js$/, /fixtures?/];
+const LIFECYCLE_HOOK_PATTERNS = [/postinstall/, /preinstall/, /['"]install['"]/, /['"]prepare['"]/];
+const KNOWN_SAFE_DOMAINS = [
+  'registry.npmjs.org', 'cdn.jsdelivr.net', 'unpkg.com', 'cdn.skypack.dev',
+  'esm.sh', 'deno.land', 'raw.githubusercontent.com', 'github.com',
+  'npmjs.com', 'nodejs.org', 'v8.dev', 'typescriptlang.org'
+];
+
+function extractUrlDomain(code) {
+  const urlMatch = code.match(/https?:\/\/([^/'"\s]+)/);
+  return urlMatch ? urlMatch[1] : null;
+}
+
+function isDistOrBuild(filePath) {
+  return DIST_BUILD_PATTERNS.some(p => p.test(filePath));
+}
+
+function isTestOrFixture(filePath) {
+  return TEST_FIXTURE_PATTERNS.some(p => p.test(filePath));
+}
+
+function isLifecycleHook(code) {
+  return LIFECYCLE_HOOK_PATTERNS.some(p => p.test(code));
+}
+
+function isKnownSafeDomain(domain) {
+  if (!domain) return false;
+  return KNOWN_SAFE_DOMAINS.some(safe => domain === safe || domain.endsWith('.' + safe));
+}
+
+function createContext(filePath, code) {
+  return {
+    file_path: filePath,
+    is_dist_build: isDistOrBuild(filePath),
+    is_test_fixture: isTestOrFixture(filePath),
+    is_lifecycle_hook: isLifecycleHook(code),
+    url_domain: extractUrlDomain(code),
+    is_known_safe_domain: isKnownSafeDomain(extractUrlDomain(code)),
+  };
+}
+
 export async function scan(pkgJson, files = []) {
   const findings = [];
   const pkgName = pkgJson?.name || '';
@@ -5,6 +47,7 @@ export async function scan(pkgJson, files = []) {
 
   for (const f of files) {
     const code = f.content;
+    const ctx = createContext(f.path, code);
 
     const hasEval = /eval\(|new Function\(|\bFunction\('/.test(code);
 
@@ -19,7 +62,8 @@ export async function scan(pkgJson, files = []) {
           severity: 'medium',
           title: 'Obfuscated payload',
           description: hexDecode ? 'Eval with hex-decoded payload' : 'Eval with base64-decoded payload',
-          evidence: 'eval + decode pattern detected'
+          evidence: 'eval + decode pattern detected',
+          context: ctx,
         });
         return findings;
       }
@@ -32,7 +76,8 @@ export async function scan(pkgJson, files = []) {
             severity: 'high',
             title: 'Obfuscated payload',
             description: 'Double-encoded nested payload',
-            evidence: 'nested encode/decode detected'
+            evidence: 'nested encode/decode detected',
+            context: { ...ctx, is_multi_layer: true },
           });
           return findings;
         }
@@ -48,7 +93,8 @@ export async function scan(pkgJson, files = []) {
           severity: 'medium',
           title: 'Obfuscated payload',
           description: 'Decoded string containing URL/fetch call',
-          evidence: 'obfuscation with network call'
+          evidence: 'obfuscation with network call',
+          context: ctx,
         });
         return findings;
       }
@@ -60,7 +106,8 @@ export async function scan(pkgJson, files = []) {
         severity: 'medium',
         title: 'Obfuscated payload',
         description: 'Eval with String.fromCharCode obfuscation',
-        evidence: 'charcode obfuscation detected'
+        evidence: 'charcode obfuscation detected',
+        context: ctx,
       });
       return findings;
     }
@@ -79,7 +126,8 @@ export async function scan(pkgJson, files = []) {
           severity: 'high',
           title: 'Obfuscated payload',
           description: 'Shell-code obfuscation pattern',
-          evidence: p.source.substring(0, 60)
+          evidence: p.source.substring(0, 60),
+          context: ctx,
         });
         return findings;
       }

@@ -4,8 +4,75 @@ import { load as yamlLoad } from 'js-yaml';
 const SEVERITY_ORDER = ['none', 'low', 'medium', 'high', 'critical'];
 const VALID_SEVERITIES = new Set(SEVERITY_ORDER);
 
+const KNOWN_REPUTABLE_PACKAGES = new Set([
+  'react', 'react-dom', 'vue', 'angular', 'next', 'nuxt',
+  'express', 'fastify', 'hono', 'koa', 'connect',
+  'webpack', 'vite', 'rollup', 'esbuild', 'typescript', 'babel-core',
+  'lodash', 'ramda', 'underscore',
+  'axios', 'node-fetch', 'got', 'superagent',
+  'sequelize', 'prisma', 'typeorm', 'mongoose',
+  'jest', 'mocha', 'vitest', 'ava',
+  'prettier', 'eslint', 'stylelint',
+  'socket.io', 'ws',
+  'rimraf', 'glob', 'minimatch', 'fs-extra',
+]);
+
 function severityIndex(s) {
   return SEVERITY_ORDER.indexOf(s);
+}
+
+function matchesFilePath(filePath, pattern) {
+  if (!pattern) return false;
+  if (pattern === '*') return true;
+  const regexPattern = pattern
+    .replace(/\./g, '\\.')
+    .replace(/\*\*/g, '___DOUBLE_STAR___')
+    .replace(/\*/g, '[^/]*')
+    .replace(/___DOUBLE_STAR___/g, '.*');
+  return new RegExp(`^${regexPattern}$`).test(filePath);
+}
+
+function matchesContext(finding, rule) {
+  const ctx = finding.context;
+  if (!ctx) return false;
+
+  if (rule.context?.is_dist_build === true && !ctx.is_dist_build) return false;
+  if (rule.context?.is_dist_build === false && ctx.is_dist_build) return false;
+  if (rule.context?.is_test_fixture === true && !ctx.is_test_fixture) return false;
+  if (rule.context?.is_test_fixture === false && ctx.is_test_fixture) return false;
+  if (rule.context?.is_lifecycle_hook === true && !ctx.is_lifecycle_hook) return false;
+  if (rule.context?.is_lifecycle_hook === false && ctx.is_lifecycle_hook) return false;
+  if (rule.context?.is_known_safe_domain === true && !ctx.is_known_safe_domain) return false;
+  if (rule.context?.is_known_safe_domain === false && ctx.is_known_safe_domain) return false;
+
+  if (rule.context?.file_path && !matchesFilePath(ctx.file_path, rule.context.file_path)) return false;
+  if (rule.context?.url_domain) {
+    if (!ctx.url_domain) return false;
+    const domainPattern = rule.context.url_domain.replace(/\*/g, '.*');
+    if (!new RegExp(`^${domainPattern}$`).test(ctx.url_domain)) return false;
+  }
+
+  return true;
+}
+
+function getPackageReputationTier(pkgName) {
+  const name = pkgName?.replace(/^@/, '').replace(/\/.*/, '') || '';
+  if (KNOWN_REPUTABLE_PACKAGES.has(name)) return 'trusted';
+  return 'unknown';
+}
+
+function matchesSuppressRule(finding, pkgName, rule) {
+  if (rule.atk_id !== (finding.atk_id || finding.id)) return false;
+  if (rule.package && rule.package !== '*' && rule.package !== pkgName) return false;
+
+  if (rule.context && !matchesContext(finding, rule)) return false;
+
+  if (rule.reputation_tier) {
+    const tier = getPackageReputationTier(pkgName);
+    if (rule.reputation_tier !== tier && !(rule.reputation_tier === '*' || rule.reputation_tier === 'any')) return false;
+  }
+
+  return true;
 }
 
 function loadPolicy(path) {
@@ -63,6 +130,8 @@ function sanitizePolicy(policy) {
       atk_id: r.atk_id,
       package: r.package || '*',
       reason: r.reason || '',
+      context: r.context || null,
+      reputation_tier: r.reputation_tier || null,
     })),
   };
 }
@@ -73,19 +142,15 @@ function isAllowed(packageName, policy) {
   return policy.allow.packages.some(p => p === packageName || p === nameOnly);
 }
 
-function matchesSuppressRule(finding, pkgName, rule) {
-  if (rule.atk_id !== (finding.atk_id || finding.id)) return false;
-  if (rule.package === '*') return true;
-  return rule.package === pkgName;
-}
-
 function applyPolicy(findings, packageName, policy) {
   let filtered = [...findings];
 
   if (policy.suppress.length) {
-    filtered = filtered.filter(f =>
-      !policy.suppress.some(r => matchesSuppressRule(f, packageName, r))
-    );
+    filtered = filtered.filter(f => {
+      if (f.context?.is_lifecycle_hook) return true;
+      if (f.context?.is_multi_layer) return true;
+      return !policy.suppress.some(r => matchesSuppressRule(f, packageName, r));
+    });
   }
 
   filtered = filtered.map(f => {
@@ -108,4 +173,4 @@ function checkFailOn(findings, policy) {
   return findings.some(f => severityIndex(f.severity) >= threshold);
 }
 
-export { loadPolicy, applyPolicy, isAllowed };
+export { loadPolicy, applyPolicy, isAllowed, getPackageReputationTier, matchesContext };
