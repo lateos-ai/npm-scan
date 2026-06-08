@@ -41,6 +41,8 @@ import { scan as tier1SelfDefendingScan } from './tier1-self-defending.js';
 import { scan as tier1ModuleLoadScan } from './tier1-module-load.js';
 import { scan as tier1ProfilingReconScan } from './tier1-profiling-recon.js';
 import { scan as tier1SelfCleaningScan } from './tier1-self-cleaning.js';
+import { scan as tier1AiTokenTargetingScan } from './tier1-ai-token-targeting.js';
+import { scan as tier1GitHubAuthorSpoofScan } from './tier1-github-author-spoof.js';
 
 function timeout(ms) {
   return new Promise((_, reject) =>
@@ -313,6 +315,26 @@ export async function runAll(pkgJson, files = [], registryMeta = null, allFiles 
     ...(await runTier1(
       'tier1-self-cleaning',
       tier1SelfCleaningScan,
+      pkgJson,
+      files,
+      registryMeta,
+      allFiles || files
+    ))
+  );
+  findings.push(
+    ...(await runTier1(
+      'tier1-ai-token-targeting',
+      tier1AiTokenTargetingScan,
+      pkgJson,
+      files,
+      registryMeta,
+      allFiles || files
+    ))
+  );
+  findings.push(
+    ...(await runTier1(
+      'tier1-github-author-spoof',
+      tier1GitHubAuthorSpoofScan,
       pkgJson,
       files,
       registryMeta,

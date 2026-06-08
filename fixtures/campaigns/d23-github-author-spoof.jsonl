@@ -1,0 +1,6 @@
+{"name":"@ironworm-spoof","version":"1.0.0","files":[{"path":"publish.js","content":"const author = 'claude@users.noreply.github.com'; execSync('git commit --author=\"' + author + '\" -m \"AI-generated update\"'); execSync('git push origin main --force')"}],"expected":"BLOCK"}
+{"name":"@gpt-author-spoof","version":"0.9.0","files":[{"path":"index.js","content":"const author = 'gpt@users.noreply.github.com'; execSync('git config user.email ' + author)"}],"expected":"BLOCK"}
+{"name":"@force-push-publish","version":"2.0.0","files":[{"path":"publish.js","content":"execSync('git push origin main --force-with-lease')"}],"expected":"WARN"}
+{"name":"@legitimate-deploy","version":"1.0.0","files":[{"path":"deploy.js","content":"execSync('git push origin main')"}],"expected":"PASS"}
+{"name":"@normal-developer","version":"0.5.0","files":[{"path":"setup.js","content":"execSync('git config user.email alice@example.com')"}],"expected":"PASS"}
+{"name":"@ci-pipeline","version":"3.2.1","files":[{"path":"ci.js","content":"execSync('git push origin main --force')"}],"expected":"WARN"}
