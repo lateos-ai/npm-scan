@@ -1,0 +1,49 @@
+{
+  "$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
+  "entry": [
+    "cli/cli.js",
+    "backend/index.js"
+  ],
+  "dynamicallyLoaded": [
+    "backend/scripts/*.js"
+  ],
+  "ignorePatterns": [
+    "test/**",
+    "deploy/**",
+    "docker/**",
+    "api/**",
+    ".git/**"
+  ],
+  "ignoreDependencies": [
+    "@eslint/js",
+    "eslint-config-prettier",
+    "eslint-plugin-prettier"
+  ],
+  "ignoreExportsUsedInFile": true,
+  "production": true,
+  "duplicates": {
+    "mode": "mild",
+    "minTokens": 50,
+    "minLines": 6,
+    "threshold": 5
+  },
+  "health": {
+    "maxCyclomatic": 15,
+    "maxCognitive": 12,
+    "ignore": [
+      "test/**",
+      "deploy/**",
+      "docker/**"
+    ]
+  },
+  "audit": {
+    "gate": "new-only"
+  },
+  "rules": {
+    "unused-files": "error",
+    "unused-exports": "warn",
+    "unused-types": "warn",
+    "unresolved-imports": "error",
+    "circular-dependency": "warn"
+  }
+}

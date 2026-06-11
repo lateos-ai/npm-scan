@@ -4,3 +4,4 @@ npm-scan.db
 !tests/corpus/**/*.tgz
 .DS_Store
 coverage/
+.fallow/
