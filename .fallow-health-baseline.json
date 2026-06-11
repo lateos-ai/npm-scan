@@ -1,0 +1,987 @@
+{
+  "finding_counts": {
+    "backend/cra.js": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      }
+    },
+    "backend/detectors/atk-002-obfusc.js": {
+      "complexity_critical": {
+        "count": 3
+      },
+      "crap_critical": {
+        "count": 3
+      },
+      "crap_high": {
+        "count": 1
+      }
+    },
+    "backend/detectors/atk-007-typosquat.js": {
+      "crap_high": {
+        "count": 1
+      },
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "backend/detectors/atk-008-tarball-tamper.js": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      }
+    },
+    "backend/detectors/atk-009-dormant-trigger.js": {
+      "complexity_high": {
+        "count": 1
+      },
+      "crap_high": {
+        "count": 1
+      }
+    },
+    "backend/detectors/atk-010-sandbox-evasion.js": {
+      "crap_high": {
+        "count": 1
+      }
+    },
+    "backend/detectors/atk-011-transitive-prop.js": {
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "backend/detectors/axios-poisoning/d1-version-fingerprint.js": {
+      "crap_high": {
+        "count": 1
+      }
+    },
+    "backend/detectors/axios-poisoning/d2-decoy-dep.js": {
+      "crap_high": {
+        "count": 1
+      }
+    },
+    "backend/detectors/axios-poisoning/d3-postinstall-rat.js": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      }
+    },
+    "backend/detectors/axios-poisoning/index.js": {
+      "crap_critical": {
+        "count": 1
+      }
+    },
+    "backend/detectors/cve-2026-48710-badhost/codePattern.js": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 2
+      }
+    },
+    "backend/detectors/cve-2026-48710-badhost/manifest.js": {
+      "complexity_critical": {
+        "count": 7
+      },
+      "crap_critical": {
+        "count": 7
+      },
+      "crap_high": {
+        "count": 1
+      },
+      "crap_moderate": {
+        "count": 2
+      }
+    },
+    "backend/detectors/cve-2026-48710-badhost/transitive.js": {
+      "complexity_critical": {
+        "count": 4
+      },
+      "crap_critical": {
+        "count": 4
+      },
+      "crap_moderate": {
+        "count": 2
+      }
+    },
+    "backend/detectors/hf-impersonation/index.js": {
+      "complexity_critical": {
+        "count": 3
+      },
+      "crap_critical": {
+        "count": 3
+      },
+      "crap_high": {
+        "count": 2
+      }
+    },
+    "backend/detectors/hf-impersonation/jaro-winkler.js": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      }
+    },
+    "backend/detectors/hf-impersonation/simhash.js": {
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "backend/detectors/index.js": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      },
+      "crap_high": {
+        "count": 1
+      }
+    },
+    "backend/detectors/lib/entropy-analyzer.js": {
+      "crap_moderate": {
+        "count": 2
+      }
+    },
+    "backend/detectors/megalodon/d1-workflow-scan.js": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 2
+      },
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "backend/detectors/megalodon/d2-credential-harvest.js": {
+      "complexity_high": {
+        "count": 1
+      },
+      "crap_high": {
+        "count": 1
+      }
+    },
+    "backend/detectors/megalodon/d3-publish-velocity.js": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      }
+    },
+    "backend/detectors/megalodon/d4-publisher-drift.js": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      },
+      "crap_high": {
+        "count": 1
+      }
+    },
+    "backend/detectors/megalodon/index.js": {
+      "crap_high": {
+        "count": 1
+      },
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "backend/detectors/mini-shai-hulud/d1-burst-publish.js": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      }
+    },
+    "backend/detectors/mini-shai-hulud/d2-sibling-compromise.js": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      },
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "backend/detectors/mini-shai-hulud/d3-slsa-mismatch.js": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      }
+    },
+    "backend/detectors/mini-shai-hulud/d4-maintainer-anomaly.js": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      }
+    },
+    "backend/detectors/mini-shai-hulud/d5-ioc-check.js": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      }
+    },
+    "backend/detectors/mini-shai-hulud/d6-token-exfil.js": {
+      "crap_high": {
+        "count": 1
+      }
+    },
+    "backend/detectors/mini-shai-hulud/index.js": {
+      "complexity_critical": {
+        "count": 2
+      },
+      "crap_critical": {
+        "count": 2
+      }
+    },
+    "backend/detectors/msh-supplement/d1-obfuscation.js": {
+      "crap_high": {
+        "count": 1
+      }
+    },
+    "backend/detectors/msh-supplement/d2-persistence.js": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      }
+    },
+    "backend/detectors/msh-supplement/d3-geo-killswitch.js": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      }
+    },
+    "backend/detectors/msh-supplement/d4-c2-deaddrop.js": {
+      "crap_high": {
+        "count": 1
+      }
+    },
+    "backend/detectors/msh-supplement/index.js": {
+      "crap_high": {
+        "count": 1
+      }
+    },
+    "backend/detectors/node-ipc-compromise/d1-version-blocklist.js": {
+      "crap_high": {
+        "count": 1
+      }
+    },
+    "backend/detectors/node-ipc-compromise/d10-unauthorized-publisher.js": {
+      "crap_critical": {
+        "count": 1
+      }
+    },
+    "backend/detectors/node-ipc-compromise/d11-blast-radius.js": {
+      "crap_high": {
+        "count": 1
+      }
+    },
+    "backend/detectors/node-ipc-compromise/d2-tarball-hash.js": {
+      "complexity_high": {
+        "count": 1
+      },
+      "crap_high": {
+        "count": 1
+      }
+    },
+    "backend/detectors/node-ipc-compromise/d3-cjs-payload-injection.js": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      }
+    },
+    "backend/detectors/node-ipc-compromise/d4-injected-payload-hash.js": {
+      "crap_high": {
+        "count": 1
+      }
+    },
+    "backend/detectors/node-ipc-compromise/d5-dns-c2-pattern.js": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      }
+    },
+    "backend/detectors/node-ipc-compromise/d6-bootstrap-resolver.js": {
+      "crap_critical": {
+        "count": 1
+      }
+    },
+    "backend/detectors/node-ipc-compromise/d7-dns-txt-exfil.js": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      }
+    },
+    "backend/detectors/node-ipc-compromise/d8-runtime-trigger.js": {
+      "crap_critical": {
+        "count": 1
+      }
+    },
+    "backend/detectors/node-ipc-compromise/index.js": {
+      "crap_high": {
+        "count": 1
+      }
+    },
+    "backend/detectors/tier1-ai-token-targeting.js": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      },
+      "crap_moderate": {
+        "count": 3
+      }
+    },
+    "backend/detectors/tier1-binary-embed.js": {
+      "complexity_critical": {
+        "count": 3
+      },
+      "crap_critical": {
+        "count": 3
+      },
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "backend/detectors/tier1-build-config-abuse.js": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      },
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "backend/detectors/tier1-bun-runtime-swap.js": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      },
+      "crap_moderate": {
+        "count": 3
+      }
+    },
+    "backend/detectors/tier1-cloud-imds.js": {
+      "complexity_critical": {
+        "count": 2
+      },
+      "crap_critical": {
+        "count": 2
+      },
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "backend/detectors/tier1-ebpf-rootkit.js": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      },
+      "crap_moderate": {
+        "count": 2
+      }
+    },
+    "backend/detectors/tier1-encrypted-c2.js": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      },
+      "crap_high": {
+        "count": 2
+      }
+    },
+    "backend/detectors/tier1-github-author-spoof.js": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      },
+      "crap_moderate": {
+        "count": 3
+      }
+    },
+    "backend/detectors/tier1-infostealer.js": {
+      "complexity_critical": {
+        "count": 2
+      },
+      "crap_critical": {
+        "count": 2
+      },
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "backend/detectors/tier1-lifecycle-hook.js": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 2
+      },
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "backend/detectors/tier1-maintainer-compromise.js": {
+      "crap_critical": {
+        "count": 1
+      },
+      "crap_moderate": {
+        "count": 2
+      }
+    },
+    "backend/detectors/tier1-memory-extraction.js": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      },
+      "crap_moderate": {
+        "count": 2
+      }
+    },
+    "backend/detectors/tier1-metadata-spoof.js": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 2
+      },
+      "crap_moderate": {
+        "count": 2
+      }
+    },
+    "backend/detectors/tier1-module-load.js": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      },
+      "crap_moderate": {
+        "count": 2
+      }
+    },
+    "backend/detectors/tier1-multistage-postinstall.js": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      }
+    },
+    "backend/detectors/tier1-obfuscation-heuristics.js": {
+      "complexity_critical": {
+        "count": 2
+      },
+      "crap_critical": {
+        "count": 2
+      }
+    },
+    "backend/detectors/tier1-privilege-escalation.js": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      },
+      "crap_moderate": {
+        "count": 2
+      }
+    },
+    "backend/detectors/tier1-profiling-recon.js": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      },
+      "crap_moderate": {
+        "count": 2
+      }
+    },
+    "backend/detectors/tier1-self-cleaning.js": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      },
+      "crap_moderate": {
+        "count": 2
+      }
+    },
+    "backend/detectors/tier1-self-defending.js": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "complexity_high": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      },
+      "crap_high": {
+        "count": 1
+      },
+      "crap_moderate": {
+        "count": 2
+      }
+    },
+    "backend/detectors/tier1-self-propagation.js": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      },
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "backend/detectors/tier1-split-dynamic-payload.js": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      },
+      "crap_moderate": {
+        "count": 3
+      }
+    },
+    "backend/detectors/tier1-transitive-deps.js": {
+      "complexity_critical": {
+        "count": 2
+      },
+      "crap_critical": {
+        "count": 2
+      },
+      "crap_moderate": {
+        "count": 2
+      }
+    },
+    "backend/detectors/tier1-typosquat.js": {
+      "complexity_critical": {
+        "count": 4
+      },
+      "crap_critical": {
+        "count": 5
+      }
+    },
+    "backend/detectors/tier1-version-anomaly.js": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      },
+      "crap_high": {
+        "count": 3
+      }
+    },
+    "backend/detectors/tier1-version-confusion.js": {
+      "crap_critical": {
+        "count": 1
+      },
+      "crap_high": {
+        "count": 1
+      }
+    },
+    "backend/detectors/trapdoor/d1-campaign-marker.js": {
+      "crap_high": {
+        "count": 1
+      }
+    },
+    "backend/detectors/trapdoor/d2-payload-fingerprint.js": {
+      "crap_high": {
+        "count": 1
+      }
+    },
+    "backend/detectors/trapdoor/d3-publisher-blocklist.js": {
+      "crap_high": {
+        "count": 1
+      }
+    },
+    "backend/detectors/trapdoor/d4-gists-exfil.js": {
+      "crap_critical": {
+        "count": 1
+      }
+    },
+    "backend/detectors/trapdoor/d5-ai-poisoning.js": {
+      "crap_high": {
+        "count": 1
+      }
+    },
+    "backend/detectors/trapdoor/d6-lure-name.js": {
+      "crap_critical": {
+        "count": 1
+      }
+    },
+    "backend/detectors/trapdoor/d7-crypto-primitives.js": {
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "backend/detectors/trapdoor/d8-xor-key.js": {
+      "crap_high": {
+        "count": 1
+      }
+    },
+    "backend/detectors/trapdoor/d9-cred-validation.js": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      }
+    },
+    "backend/detectors/typosquat-vpmdhaj/d1-maintainer.js": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      },
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "backend/detectors/typosquat-vpmdhaj/d2-preinstall-loader.js": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      }
+    },
+    "backend/detectors/typosquat-vpmdhaj/d3-cred-exfil.js": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      }
+    },
+    "backend/detectors/typosquat-vpmdhaj/index.js": {
+      "crap_high": {
+        "count": 1
+      }
+    },
+    "backend/fetch.js": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      },
+      "crap_high": {
+        "count": 1
+      },
+      "crap_moderate": {
+        "count": 2
+      }
+    },
+    "backend/license.js": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      },
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "backend/lockfile.js": {
+      "complexity_critical": {
+        "count": 5
+      },
+      "crap_critical": {
+        "count": 5
+      }
+    },
+    "backend/pdf.js": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      },
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "backend/policy.js": {
+      "complexity_critical": {
+        "count": 2
+      },
+      "crap_critical": {
+        "count": 3
+      },
+      "crap_moderate": {
+        "count": 4
+      }
+    },
+    "backend/report.js": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      },
+      "crap_high": {
+        "count": 1
+      },
+      "crap_moderate": {
+        "count": 4
+      }
+    },
+    "backend/sbom.js": {
+      "crap_moderate": {
+        "count": 2
+      }
+    },
+    "backend/scripts/analyze-false-positives.js": {
+      "complexity_high": {
+        "count": 1
+      },
+      "crap_high": {
+        "count": 1
+      }
+    },
+    "backend/scripts/analyze-validation.js": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      }
+    },
+    "backend/scripts/detect-false-positives.js": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      }
+    },
+    "backend/scripts/fetch-top-packages.js": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      }
+    },
+    "backend/scripts/validate-detectors.js": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      }
+    },
+    "backend/siem/cef.js": {
+      "crap_critical": {
+        "count": 1
+      }
+    },
+    "backend/siem/ecs.js": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      }
+    },
+    "backend/siem/index.js": {
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "backend/siem/qradar.js": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      }
+    },
+    "backend/siem/sentinel.js": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      }
+    },
+    "backend/vsix-scan/detectors/activation-event-risk.js": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      }
+    },
+    "backend/vsix-scan/detectors/burst-publish.js": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      }
+    },
+    "backend/vsix-scan/detectors/exfil-pattern.js": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      }
+    },
+    "backend/vsix-scan/detectors/known-ioc.js": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      }
+    },
+    "backend/vsix-scan/detectors/orphan-commit-fetch.js": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      }
+    },
+    "backend/vsix-scan/detectors/publisher-anomaly.js": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      }
+    },
+    "backend/vsix-scan/index.js": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      },
+      "crap_high": {
+        "count": 3
+      },
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "backend/vsix-scan/marketplace-client.js": {
+      "crap_high": {
+        "count": 2
+      },
+      "crap_moderate": {
+        "count": 2
+      }
+    },
+    "cli/cli.js": {
+      "complexity_critical": {
+        "count": 3
+      },
+      "crap_critical": {
+        "count": 3
+      },
+      "crap_high": {
+        "count": 3
+      }
+    }
+  },
+  "runtime_coverage_findings": [],
+  "target_keys": [
+    "backend/detectors/mini-shai-hulud/index.js:complexity",
+    "backend/detectors/hf-impersonation/index.js:dead code",
+    "backend/detectors/index.js:complexity",
+    "backend/provenance.js:dead code",
+    "backend/detectors/tier1-binary-embed.js:complexity",
+    "backend/detectors/tier1-github-author-spoof.js:untested risk",
+    "backend/detectors/tier1-ai-token-targeting.js:untested risk",
+    "backend/detectors/mini-shai-hulud/d5-ioc-check.js:dead code",
+    "backend/detectors/tier1-encrypted-c2.js:complexity",
+    "backend/detectors/tier1-self-propagation.js:untested risk",
+    "backend/detectors/lib/entropy-analyzer.js:untested risk",
+    "backend/detectors/tier1-version-anomaly.js:dead code",
+    "backend/license.js:dead code",
+    "backend/detectors/tier1-build-config-abuse.js:complexity",
+    "backend/detectors/tier1-bun-runtime-swap.js:untested risk",
+    "backend/detectors/mini-shai-hulud/d3-slsa-mismatch.js:complexity",
+    "backend/lockfile.js:dead code",
+    "backend/detectors/tier1-split-dynamic-payload.js:untested risk",
+    "backend/vsix-scan/detectors/known-ioc.js:dead code",
+    "backend/detectors/tier1-infostealer.js:complexity",
+    "backend/detectors/tier1-module-load.js:complexity",
+    "backend/detectors/tier1-lifecycle-hook.js:complexity",
+    "cli/cli.js:complexity",
+    "backend/policy.js:high impact",
+    "backend/detectors/tier1-profiling-recon.js:complexity",
+    "backend/detectors/tier1-self-cleaning.js:complexity",
+    "backend/detectors/tier1-typosquat.js:complexity",
+    "backend/detectors/tier1-cloud-imds.js:untested risk",
+    "backend/detectors/tier1-metadata-spoof.js:complexity",
+    "backend/detectors/atk-008-tarball-tamper.js:complexity",
+    "backend/detectors/tier1-ebpf-rootkit.js:complexity",
+    "backend/detectors/tier1-privilege-escalation.js:complexity",
+    "backend/detectors/typosquat-vpmdhaj/d3-cred-exfil.js:complexity",
+    "backend/detectors/mini-shai-hulud/d2-sibling-compromise.js:complexity",
+    "backend/vsix-scan/index.js:complexity",
+    "backend/detectors/cve-2026-48710-badhost/manifest.js:untested risk",
+    "backend/detectors/cve-2026-48710-badhost/transitive.js:complexity",
+    "backend/detectors/megalodon/d1-workflow-scan.js:complexity",
+    "backend/detectors/megalodon/d4-publisher-drift.js:complexity",
+    "backend/detectors/axios-poisoning/d3-postinstall-rat.js:complexity",
+    "backend/vsix-scan/detectors/activation-event-risk.js:complexity",
+    "backend/detectors/cve-2026-48710-badhost/codePattern.js:complexity",
+    "backend/detectors/atk-002-obfusc.js:complexity",
+    "backend/pdf.js:complexity",
+    "backend/scripts/analyze-validation.js:complexity"
+  ]
+}
