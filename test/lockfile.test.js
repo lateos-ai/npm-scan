@@ -4,6 +4,8 @@ import {
   parseLockfile,
   checkMaliciousPatterns,
   analyzeDependencyGraph,
+  analyzeResolutionIntegrity,
+  classifyResolved,
   generateLockfileReport,
 } from '../backend/lockfile.js';
 import { writeFileSync, mkdirSync as _mkdirSync, rmSync as _rmSync } from 'fs';
@@ -388,4 +390,118 @@ test('lockfile: generateLockfileReport computes risk score with findings', async
   const report = generateLockfileReport(data);
   assert.notEqual(report.riskScore, '0.0');
   assert(report.findings.length > 0);
+});
+
+/* ------------------------------------------------------------------ *
+ * gap-analysis §3 — resolved-host + integrity validation             *
+ * ------------------------------------------------------------------ */
+
+const pkg = (name, resolved, integrity) => ({
+  name,
+  version: '1.0.0',
+  resolved,
+  integrity,
+  peerDeps: {},
+  dependencies: {},
+  optionalDependencies: {},
+});
+const data = (packages) => ({
+  packages,
+  root: {
+    name: 'root',
+    version: '1.0.0',
+    dependencies: {},
+    devDependencies: {},
+    peerDependencies: {},
+  },
+});
+
+test('resolved-host: cleartext http is high severity', () => {
+  const findings = analyzeResolutionIntegrity(
+    data([pkg('evil', 'http://attacker.internal/evil.tgz', 'sha512-abc')])
+  );
+  const f = findings.find((x) => x.id === 'LOCKFILE-RESOLVED-HOST');
+  assert.ok(f);
+  assert.equal(f.severity, 'high');
+});
+
+test('resolved-host: git+ssh is high severity', () => {
+  const findings = analyzeResolutionIntegrity(
+    data([pkg('evil', 'git+ssh://git@evil.example/x.git', 'sha512-abc')])
+  );
+  assert.equal(findings.find((x) => x.id === 'LOCKFILE-RESOLVED-HOST').severity, 'high');
+});
+
+test('resolved-host: unexpected https host is medium', () => {
+  const findings = analyzeResolutionIntegrity(
+    data([pkg('x', 'https://mirror.evil.example/x.tgz', 'sha512-abc')])
+  );
+  const f = findings.find((x) => x.id === 'LOCKFILE-RESOLVED-HOST');
+  assert.ok(f);
+  assert.equal(f.severity, 'medium');
+});
+
+test('resolved-host: allowlisted npmjs registry is clean', () => {
+  const findings = analyzeResolutionIntegrity(
+    data([pkg('lodash', 'https://registry.npmjs.org/lodash/-/lodash-4.17.21.tgz', 'sha512-abc')])
+  );
+  assert.equal(findings.filter((x) => x.id === 'LOCKFILE-RESOLVED-HOST').length, 0);
+});
+
+test('resolved-host: public git forges are not flagged', () => {
+  const findings = analyzeResolutionIntegrity(
+    data([pkg('dep', 'git+https://github.com/acme/dep.git#deadbeef', 'sha512-abc')])
+  );
+  assert.equal(findings.filter((x) => x.id === 'LOCKFILE-RESOLVED-HOST').length, 0);
+});
+
+test('resolved-host: bare registry-relative specifier (pnpm style) is clean', () => {
+  assert.equal(classifyResolved('/left-pad@1.3.0'), null);
+  assert.equal(classifyResolved('left-pad@1.3.0'), null);
+});
+
+test('resolved-host: policy allowlist extends trusted hosts', () => {
+  const findings = analyzeResolutionIntegrity(
+    data([pkg('x', 'https://npm.corp.example/x.tgz', 'sha512-abc')])
+  );
+  assert.ok(findings.some((x) => x.id === 'LOCKFILE-RESOLVED-HOST'));
+  const trusted = analyzeResolutionIntegrity(
+    data([pkg('x', 'https://npm.corp.example/x.tgz', 'sha512-abc')]),
+    {
+      allowedRegistries: ['npm.corp.example'],
+    }
+  );
+  assert.equal(trusted.filter((x) => x.id === 'LOCKFILE-RESOLVED-HOST').length, 0);
+});
+
+test('integrity: resolved present with no integrity is flagged', () => {
+  const findings = analyzeResolutionIntegrity(
+    data([pkg('lodash', 'https://registry.npmjs.org/lodash/-/lodash-4.17.21.tgz', '')])
+  );
+  assert.ok(findings.some((x) => x.id === 'LOCKFILE-MISSING-INTEGRITY'));
+});
+
+test('integrity: pnpm entry with no resolved is not flagged', () => {
+  const findings = analyzeResolutionIntegrity(
+    data([
+      {
+        name: 'x',
+        version: '1.0.0',
+        resolved: '',
+        integrity: '',
+        peerDeps: {},
+        dependencies: {},
+        optionalDependencies: {},
+      },
+    ])
+  );
+  assert.equal(findings.length, 0);
+});
+
+test('generateLockfileReport surfaces resolved-host findings', () => {
+  const report = generateLockfileReport(
+    data([pkg('evil', 'http://attacker.internal/evil.tgz', 'sha512-abc')]),
+    { allowedRegistries: [] }
+  );
+  assert.ok(report.findings.some((x) => x.id === 'LOCKFILE-RESOLVED-HOST'));
 });

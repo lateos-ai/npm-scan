@@ -256,6 +256,9 @@ function loadPolicy(path) {
     if (policy.allow.packages && !Array.isArray(policy.allow.packages)) {
       throw new Error('allow.packages must be an array');
     }
+    if (policy.allow.registries && !Array.isArray(policy.allow.registries)) {
+      throw new Error('allow.registries must be an array');
+    }
   }
 
   return sanitizePolicy(policy);
@@ -263,7 +266,10 @@ function loadPolicy(path) {
 
 function sanitizePolicy(policy) {
   return {
-    allow: { packages: policy.allow?.packages ?? [] },
+    allow: {
+      packages: policy.allow?.packages ?? [],
+      registries: policy.allow?.registries ?? [],
+    },
     severity_overrides: policy.severity_overrides ?? {},
     fail_on: policy.fail_on ?? 'none',
     suppress: (policy.suppress ?? []).map((r) => ({

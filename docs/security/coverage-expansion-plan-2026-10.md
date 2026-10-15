@@ -152,4 +152,6 @@ Node native test runner (`node --test`). Per new detector a `test/<name>.test.js
 5. D32 host-persistence + dead-man switch (~2–3d) — novel signal, most calibration risk.
 6. Ext C blockchain dead-drop + D4 naming fix (~1d).
 
-**Deferred (Track B):** cryptographic Sigstore verification; `lib/prompt-injection.js` dead-code + non-global-regex infinite-loop fix (call-signature mismatch in `index.js`); lockfile `resolved`-host + missing-`integrity` validation; ATK-006 stub rework.
+**Deferred (Track B):** cryptographic Sigstore verification; ATK-006 stub rework.
+
+**Completed after the initial Track A commit:** `lib/prompt-injection.js` dead-code + non-global-regex infinite-loop fix (call-signature mismatch in `index.js`); lockfile `resolved`-host + missing-`integrity` validation with a policy-configurable `allow.registries` allowlist.

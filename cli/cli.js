@@ -228,6 +228,10 @@ program
   .option('--monorepo', 'Scan all lockfiles in workspace (auto-detect type)')
   .option('--yarn', 'Force yarn.lock format')
   .option('--pnpm', 'Force pnpm-lock.yaml format')
+  .option(
+    '-p, --policy <path>',
+    'Policy file (YAML/JSON): allow.registries extends the registry allowlist'
+  )
   .action(async (options) => {
     const silent = options.silent;
     const debounce = parseInt(options.debounce, 10) || 1000;
@@ -340,7 +344,13 @@ program
         const lockfileData = parseLockfile(lockfile, {
           autoDetect: !options.yarn && !options.pnpm,
         });
-        const results = generateLockfileReport(lockfileData);
+        let allowedRegistries = [];
+        if (options.policy) {
+          const { loadPolicy } = await import('../backend/policy.js');
+          const policy = loadPolicy(options.policy);
+          allowedRegistries = policy.allow.registries || [];
+        }
+        const results = generateLockfileReport(lockfileData, { allowedRegistries });
 
         if (!silent) {
           console.log(`  Total deps: ${results.totalDependencies}`);

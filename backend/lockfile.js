@@ -2,6 +2,161 @@ import { readFileSync } from 'fs';
 import { resolve as _resolve, dirname as _dirname } from 'path';
 import yaml from 'js-yaml';
 
+// gap-analysis-2026-08 §3: lockfile `resolved` URLs are parsed for all three
+// formats and then discarded. A dependency resolving to a cleartext host, a
+// git+ssh remote, or an unexpected registry passes without comment. These are
+// the default-trusted registry hosts; private registries are added via policy
+// (`allow.registries`) so the check is usable in enterprise environments.
+const DEFAULT_ALLOWED_REGISTRIES = [
+  'registry.npmjs.org',
+  'registry.yarnpkg.com',
+  'registry.npmjs.com',
+];
+
+// Public source forges. A `git+https`/`https` resolved to one of these is a
+// direct git dependency — visible and common — so it is not flagged as an
+// unexpected host. Flagging every GitHub dependency would be unusably noisy.
+const KNOWN_GIT_HOSTS = new Set([
+  'github.com',
+  'codeload.github.com',
+  'raw.githubusercontent.com',
+  'gitlab.com',
+  'bitbucket.org',
+]);
+
+function normalizeRegistryEntry(entry) {
+  return String(entry)
+    .toLowerCase()
+    .replace(/^https?:\/\//, '')
+    .replace(/\/.*$/, '');
+}
+
+function hostMatchesAllowlist(host, allowed) {
+  const h = host.toLowerCase();
+  return allowed.some((entry) => {
+    const e = normalizeRegistryEntry(entry);
+    return e && (h === e || h.endsWith('.' + e));
+  });
+}
+
+/**
+ * Classify a lockfile `resolved` value. Returns null when the source is
+ * expected (allowlisted registry, public git forge, monorepo link, or a bare
+ * registry-relative specifier with no protocol).
+ */
+export function classifyResolved(resolved, allowed = DEFAULT_ALLOWED_REGISTRIES) {
+  if (!resolved || typeof resolved !== 'string') {
+    return null;
+  }
+  if (!/^[a-z][a-z0-9+.-]*:\/\//i.test(resolved)) {
+    return null; // "/foo@1.0.0", "foo@1.0.0" — registry-relative, not off-registry
+  }
+  let url;
+  try {
+    url = new URL(resolved);
+  } catch {
+    return null;
+  }
+  const proto = url.protocol.replace(':', '').toLowerCase();
+  if (proto === 'link' || proto === 'workspace') {
+    return null; // monorepo local linking
+  }
+  const host = (url.hostname || '').toLowerCase();
+
+  if (proto === 'http') {
+    return {
+      kind: 'cleartext',
+      host,
+      severity: 'high',
+      detail: `dependency fetched over cleartext http: ${resolved}`,
+    };
+  }
+  if (proto === 'git+ssh' || proto === 'ssh') {
+    return {
+      kind: 'ssh',
+      host,
+      severity: 'high',
+      detail: `dependency fetched over ssh (no registry integrity path): ${resolved}`,
+    };
+  }
+  if (proto === 'file') {
+    return {
+      kind: 'file',
+      host,
+      severity: 'medium',
+      detail: `dependency resolved to a local file path: ${resolved}`,
+    };
+  }
+  if (proto === 'https' || proto === 'git+https') {
+    if (hostMatchesAllowlist(host, allowed) || KNOWN_GIT_HOSTS.has(host)) {
+      return null;
+    }
+    return {
+      kind: 'off_registry',
+      host,
+      severity: 'medium',
+      detail: `unexpected registry host "${host}": ${resolved}`,
+    };
+  }
+  return {
+    kind: 'odd_protocol',
+    host,
+    severity: 'medium',
+    detail: `unusual resolved protocol "${proto}": ${resolved}`,
+  };
+}
+
+/**
+ * Findings for off-registry/insecure `resolved` sources and for entries that
+ * resolve a tarball with no `integrity` hash.
+ */
+export function analyzeResolutionIntegrity(lockfileData, options = {}) {
+  const allowed = [...DEFAULT_ALLOWED_REGISTRIES, ...(options.allowedRegistries || [])];
+  const hostIssues = new Map();
+  const missingIntegrity = [];
+
+  for (const pkg of lockfileData.packages || []) {
+    const label = `${pkg.name}@${pkg.version}`;
+    const cls = classifyResolved(pkg.resolved, allowed);
+    if (cls) {
+      const key = `${cls.kind}:${cls.host}`;
+      if (!hostIssues.has(key)) {
+        hostIssues.set(key, { ...cls, pkgs: [] });
+      }
+      hostIssues.get(key).pkgs.push(label);
+    }
+    if (pkg.resolved && !pkg.integrity) {
+      missingIntegrity.push(label);
+    }
+  }
+
+  const findings = [];
+  const listSuffix = (arr) =>
+    `${arr.slice(0, 10).join(', ')}${arr.length > 10 ? ` (+${arr.length - 10} more)` : ''}`;
+
+  for (const cls of hostIssues.values()) {
+    findings.push({
+      id: 'LOCKFILE-RESOLVED-HOST',
+      severity: cls.severity,
+      title: 'Dependency resolves from an off-registry or insecure source',
+      description: cls.detail,
+      evidence: `packages: ${listSuffix(cls.pkgs)}`,
+    });
+  }
+
+  if (missingIntegrity.length > 0) {
+    findings.push({
+      id: 'LOCKFILE-MISSING-INTEGRITY',
+      severity: 'medium',
+      title: 'Lockfile entries lack an integrity hash',
+      description: `${missingIntegrity.length} entr${missingIntegrity.length === 1 ? 'y resolves' : 'ies resolve'} a tarball with no integrity field, removing the tamper check the package manager would otherwise enforce.`,
+      evidence: `packages: ${listSuffix(missingIntegrity)}`,
+    });
+  }
+
+  return findings;
+}
+
 export function parseLockfile(filePath, options = {}) {
   const { autoDetect = false } = options;
   try {
@@ -362,7 +517,7 @@ export function analyzeDependencyGraph(lockfileData) {
   return findings;
 }
 
-export function generateLockfileReport(lockfileData) {
+export function generateLockfileReport(lockfileData, options = {}) {
   const total = lockfileData.packages.length;
   const dev = lockfileData.packages.filter((p) => p.dev).length;
   const optional = lockfileData.packages.filter((p) => p.optional).length;
@@ -375,6 +530,7 @@ export function generateLockfileReport(lockfileData) {
   }
 
   findings.push(...analyzeDependencyGraph(lockfileData));
+  findings.push(...analyzeResolutionIntegrity(lockfileData, options));
 
   return {
     scanId: Date.now(),
