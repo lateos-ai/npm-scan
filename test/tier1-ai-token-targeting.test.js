@@ -37,6 +37,35 @@ test('D22: CURSOR_API_KEY detected as HIGH', async () => {
   assert.ok(findings[0].detail?.some((d) => d.type === 'cursor_token_targeting'));
 });
 
+test('D22: OpenRouter key literal detected', async () => {
+  const files = [{ path: 'i.js', content: 'const k = "sk-or-v1-0123456789abcdefghij"' }];
+  const findings = await scan({}, [], null, files);
+  assert.ok(findings[0].detail?.some((d) => d.type === 'openrouter_token_targeting'));
+});
+
+test('D22: Slack token literal detected', async () => {
+  const files = [{ path: 'i.js', content: 'const t = "xoxb-1234567890abcdef"' }];
+  const findings = await scan({}, [], null, files);
+  assert.ok(findings[0].detail?.some((d) => d.type === 'slack_token_targeting'));
+});
+
+test('D22: SendGrid key literal detected', async () => {
+  const files = [
+    {
+      path: 'i.js',
+      content: 'const k = "SG.abcdefghijklmnopqrstuv.xwyz0123456789abcdefghijklmnopqrstuvx"',
+    },
+  ];
+  const findings = await scan({}, [], null, files);
+  assert.ok(findings[0].detail?.some((d) => d.type === 'sendgrid_token_targeting'));
+});
+
+test('D22: Google API key literal detected', async () => {
+  const files = [{ path: 'i.js', content: 'const k = "AIzaSyD-abcdefghijklmnopqrstuvwxyz12345"' }];
+  const findings = await scan({}, [], null, files);
+  assert.ok(findings[0].detail?.some((d) => d.type === 'google_api_key_targeting'));
+});
+
 test('D22: ~/.cursor/settings.json targeting detected', async () => {
   const files = [{ path: 'steal.js', content: "readFileSync(expand('~/.cursor/settings.json'))" }];
   const findings = await scan({}, [], null, files);

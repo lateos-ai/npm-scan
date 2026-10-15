@@ -81,6 +81,7 @@ export function scan(pkgJson, jsFiles, registryMeta, allFiles) {
     /ANTHROPIC_API_KEY/gi,
     /ANTHROPIC_ORG_ID/gi,
     /process\.env\.ANTHROPIC/gi,
+    /sk-ant-[A-Za-z0-9_-]{20,}/gi,
     /claude.*api.*key/i,
   ]);
 
@@ -89,6 +90,7 @@ export function scan(pkgJson, jsFiles, registryMeta, allFiles) {
     /OPENAI_ORG_ID/gi,
     /process\.env\.OPENAI/gi,
     /["'`]sk-[A-Za-z0-9]{20,}["'`]/gi,
+    /sk-proj-[A-Za-z0-9_-]{20,}/gi,
     /OPENAI_API_KEY\s*[:=]\s*["'`]sk-/gi,
   ]);
 
@@ -104,6 +106,25 @@ export function scan(pkgJson, jsFiles, registryMeta, allFiles) {
     /process\.env\.MISTRAL/gi,
     /mistral.*api.*key/i,
   ]);
+
+  // GhostAction / MemTensor added these credential classes to the 2026 sweep.
+  tryAdd('openrouter_token_targeting', [
+    /OPENROUTER_API_KEY/gi,
+    /process\.env\.OPENROUTER/gi,
+    /sk-or-(?:v1-)?[A-Za-z0-9_-]{20,}/gi,
+  ]);
+
+  tryAdd('slack_token_targeting', [
+    /xox[baprs]-[A-Za-z0-9-]{10,}/gi,
+    /SLACK_(?:API|BOT|USER)_?TOKEN/gi,
+  ]);
+
+  tryAdd('sendgrid_token_targeting', [
+    /SG\.[A-Za-z0-9_-]{16,}\.[A-Za-z0-9_-]{16,}/g,
+    /SENDGRID_API_KEY/gi,
+  ]);
+
+  tryAdd('google_api_key_targeting', [/AIza[A-Za-z0-9_-]{35}/g, /GOOGLE_API_KEY/gi]);
 
   tryAdd('cursor_token_targeting', [
     /CURSOR_API_KEY/gi,

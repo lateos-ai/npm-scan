@@ -6,6 +6,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+- **Coverage expansion for Aug–Oct 2026 campaigns** — see [docs/security/coverage-expansion-plan-2026-10.md](docs/security/coverage-expansion-plan-2026-10.md). Three new detectors and four extensions, derived from the keyv/cacheable Shai-Hulud variant, GhostAction, MemTensor, and PolinRider.
+- **D32-HOST-PERSISTENCE** (`tier1-host-persistence.js`): user-level host persistence + dead-man's switch. Closes the keyv/cacheable gap that `msh-supplement/d2` and `axios-poisoning/d3` (system units only) left open. Detects `~/Library/LaunchAgents/*` with `RunAtLoad`/`KeepAlive`, `~/.config/systemd/user`/`systemctl --user`, `loginctl enable-linger`, and a credential-validity poll whose revocation branch (`HTTP 4xx`/expiry) `eval`s a variable-supplied handler. The dead-man switch is AST-gated so `eval("literal")` never fires. Block ≥ 80, warn ≥ 60; a finding requires an anchor.
+- **D33-INSTALL-CONFIG-ABUSE** (`tier1-install-config-abuse.js`): install-time execution outside `package.json` scripts (gap-analysis-2026-08 §5). `.pnpmfile.cjs` `readPackage` hooks that reach outside the package, `.yarnrc(.yml)` plugins loading from an off-package location, `bunfig.toml` `[preload]`/`trustedDependencies`, and `overrides`/`resolutions` that resolve a dependency off-registry (`git+ssh`/`ssh`/`http`/`file`/`link`). Content-gated: a benign monorepo `.pnpmfile.cjs` scores nothing.
+- **TIER1-MANIFEST-CONFUSION** (`tier1-manifest-confusion.js`): registry version manifest vs tarball `package.json`. Diffs `dependencies`/`optionalDependencies`/`peerDependencies`/`scripts`/`bin` after stripping registry-injected fields; a lifecycle hook present only in the tarball is always critical. Operates on data the pipeline already holds (`registryMeta` + `pkgJson`).
+- **GhostAction workflow secret-exfil** (extension to D30 `tier1-workspace-persistence.js`): shipped `.github/workflows/*.yml` is now analysed for content, not just trigger type. A new `shipped_workflow_secret_exfil` signal (critical) fires when bound secrets (`${{ secrets.* }}`) reach a raw-IP/non-allowlisted destination, or when `fetch-depth: 0` + a git-history credential grep co-occurs. Publishing to a known registry host is allowlisted and stays a plain shipped-workflow signal.
+- **New credential literals** (extensions to `tier1-infostealer.js` and `tier1-ai-token-targeting.js`): `github_pat_` (fine-grained), `sk-ant-`/`sk-proj-`/`sk-or-`, `xox[baprs]-` (Slack), `AIza` (Google), `SG.` (SendGrid), plus secret-file recon targets `.vault-token`, `access_tokens.json`, `stored_tokens`, `id_ecdsa`, `/run/secrets/` (GhostAction / MemTensor).
+- **On-chain dead-drop detection** (extension to `msh-supplement/d4-c2-deaddrop.js`): EtherHiding/NullReceiver-class C2 resolution via `eth_call`/`eth_getStorageAt` against an RPC provider or contract address (PolinRider). High-level `ethers.js` reads (e.g. `getBalance`) are not flagged.
+- **MemTensor cross-platform binary set** verified against `tier1-binary-embed.js` (D4): the `.sckit/<os>-<arch>/<name>` extensionless layout is grouped as a cross-platform set via basename grouping; locked in with a new `test/tier1-binary-embed.test.js`.
+- **~50 new tests** across `test/tier1-host-persistence.test.js`, `test/tier1-install-config-abuse.test.js`, `test/tier1-manifest-confusion.test.js`, `test/tier1-binary-embed.test.js`, `test/tier1-infostealer-credentials.test.js`, plus added cases to `test/tier1-workspace-persistence.test.js`, `test/tier1-ai-token-targeting.test.js`, and `test/msh-supplement.test.js`.
+
+### Changed
+- **Thresholds**: added `D32-HOST-PERSISTENCE`, `D33-INSTALL-CONFIG-ABUSE`, `TIER1-MANIFEST-CONFUSION` entries; added `shipped_workflow_secret_exfil` to D30 pattern weights and new provider groups to D22.
+- **Detector index**: wired D32, D33, D34 into `backend/detectors/index.js` via `runTier1`.
+
+### Notes
+- D32/D33/D34 weights are **pre-telemetry** (PoC-calibrated, like D29/D30). `test/detectors-corpus.test.js` cannot run on Windows; re-run the corpus suite on Linux before trusting FP numbers.
+- Threat-model: a worm can mint its own valid Sigstore provenance (keyv/cacheable), so "fresh verifiable provenance" must never suppress findings. `lib/slsa-verifier.js` keeps `verified: false` until cryptographic verification lands; D31 remains the only tarball-to-source trust anchor.
+
 ## [1.6.0] — 2026-08-20
 
 ### Added

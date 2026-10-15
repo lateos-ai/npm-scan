@@ -15,6 +15,31 @@ const NPM_TOKEN_RE = /npm_[a-zA-Z0-9]{36}/g;
 const GH_TOKEN_RE = /ghp_[a-zA-Z0-9]{30,40}/g;
 const _GH_OLD_TOKEN_RE = /gho_[a-zA-Z0-9]{36}/g;
 const _GITLAB_TOKEN_RE = /glpat-[a-zA-Z0-9_-]{20,}/g;
+// GhostAction / MemTensor credential formats (2026). Presence-only triggers the
+// same critical scaling as the AWS/GitHub/npm literals above; FP controls use
+// truncated placeholders, which these length floors reject.
+const GH_FINE_TOKEN_RE = /github_pat_[A-Za-z0-9_]{22,}/g;
+const ANTHROPIC_KEY_RE = /sk-ant-[A-Za-z0-9_-]{20,}/g;
+const OPENAI_PROJ_KEY_RE = /sk-proj-[A-Za-z0-9_-]{20,}/g;
+const OPENROUTER_KEY_RE = /sk-or-(?:v1-)?[A-Za-z0-9_-]{20,}/g;
+const SLACK_TOKEN_RE = /xox[baprs]-[A-Za-z0-9-]{10,}/g;
+const GOOGLE_API_KEY_RE = /AIza[A-Za-z0-9_-]{35}/g;
+const SENDGRID_KEY_RE = /SG\.[A-Za-z0-9_-]{16,}\.[A-Za-z0-9_-]{16,}/g;
+
+// Ordered list consumed by extractCredentials; the existing AWS/npm/GitHub
+// types are preserved so the cred-pattern → critical scaling is unchanged.
+const CREDENTIAL_PATTERNS = [
+  ['cred_regex_aws', AWS_KEY_RE],
+  ['cred_regex_npm_token', NPM_TOKEN_RE],
+  ['cred_regex_gh_token', GH_TOKEN_RE],
+  ['cred_regex_gh_fine_grained', GH_FINE_TOKEN_RE],
+  ['cred_regex_anthropic', ANTHROPIC_KEY_RE],
+  ['cred_regex_openai', OPENAI_PROJ_KEY_RE],
+  ['cred_regex_openrouter', OPENROUTER_KEY_RE],
+  ['cred_regex_slack', SLACK_TOKEN_RE],
+  ['cred_regex_google', GOOGLE_API_KEY_RE],
+  ['cred_regex_sendgrid', SENDGRID_KEY_RE],
+];
 
 const ENV_DUMP_RE = /process\.env\.(?:AWS_[A-Z_]+|NPM_TOKEN|NPM_AUTH_TOKEN|GIT_TOKEN|SSH_KEY)/g;
 
@@ -23,7 +48,7 @@ const FUNCTION_CTOR_RE = /\bFunction\s*\(/g;
 const _B64_STRING_RE = /['"`]([A-Za-z0-9+/]{40,}={0,2})['"`]/g;
 
 const IDENTITY_PATH_RE =
-  /(?:['"`](?:~\/\.gitconfig|~\/\.config\/git\/config|\.git\/config|\.git\/logs\/HEAD|~\/\.ssh\/[^'"`]*\.pub|~\/\.aws\/config|~\/\.config\/gcloud\/properties|\/etc\/resolv\.conf)[`'"]|\.gitconfig|\.ssh\/|\.aws\/config|\.config\/git\/config|\.config\/gcloud\/properties|resolv\.conf)/g;
+  /(?:['"`](?:~\/\.gitconfig|~\/\.config\/git\/config|\.git\/config|\.git\/logs\/HEAD|~\/\.ssh\/[^'"`]*\.pub|~\/\.ssh\/id_ecdsa|~\/\.aws\/config|~\/\.config\/gcloud\/properties|~\/\.vault-token|\/etc\/resolv\.conf|\/run\/secrets\/|access_tokens\.json|stored_tokens)[`'"]|\.gitconfig|\.ssh\/|\.aws\/config|\.config\/git\/config|\.config\/gcloud\/properties|resolv\.conf|\.vault-token|access_tokens\.json|stored_tokens|id_ecdsa|\/run\/secrets\/)/g;
 const GIT_CONFIG_EXEC_RE =
   /(?:(?:exec|execSync|spawn|spawnSync)\s*\(\s*['"]git['"]\s*,\s*\[\s*['"]config['"]|(?:exec|execSync)\s*\(\s*['"]git\s+config\b)/g;
 
@@ -72,18 +97,12 @@ function extractDomains(content) {
 
 function extractCredentials(content) {
   const creds = [];
-  let match;
-  AWS_KEY_RE.lastIndex = 0;
-  while ((match = AWS_KEY_RE.exec(content)) !== null) {
-    creds.push({ type: 'cred_regex_aws', value: match[0], index: match.index });
-  }
-  NPM_TOKEN_RE.lastIndex = 0;
-  while ((match = NPM_TOKEN_RE.exec(content)) !== null) {
-    creds.push({ type: 'cred_regex_npm_token', value: match[0], index: match.index });
-  }
-  GH_TOKEN_RE.lastIndex = 0;
-  while ((match = GH_TOKEN_RE.exec(content)) !== null) {
-    creds.push({ type: 'cred_regex_gh_token', value: match[0], index: match.index });
+  for (const [type, regex] of CREDENTIAL_PATTERNS) {
+    regex.lastIndex = 0;
+    let match;
+    while ((match = regex.exec(content)) !== null) {
+      creds.push({ type, value: match[0], index: match.index });
+    }
   }
   return creds;
 }

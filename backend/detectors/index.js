@@ -52,6 +52,9 @@ import { scan as tier1AiSlopDropperScan } from './tier1-ai-slop-dropper.js';
 import { scan as tier1RuntimeEvasionScan } from './tier1-runtime-evasion.js';
 import { scan as tier1WorkspacePersistenceScan } from './tier1-workspace-persistence.js';
 import { scan as tier1TarballGitDesyncScan } from './tier1-tarball-git-desync.js';
+import { scan as tier1ManifestConfusionScan } from './tier1-manifest-confusion.js';
+import { scan as tier1InstallConfigAbuseScan } from './tier1-install-config-abuse.js';
+import { scan as tier1HostPersistenceScan } from './tier1-host-persistence.js';
 import { scanPromptInjection } from './lib/prompt-injection.js';
 
 function timeout(ms) {
@@ -469,6 +472,36 @@ export async function runAll(
       registryMeta,
       allFiles || files,
       { timeoutMs: 30000, detectorOptions: options.gitDiff }
+    ))
+  );
+  findings.push(
+    ...(await runTier1(
+      'tier1-manifest-confusion',
+      tier1ManifestConfusionScan,
+      pkgJson,
+      files,
+      registryMeta,
+      allFiles || files
+    ))
+  );
+  findings.push(
+    ...(await runTier1(
+      'tier1-host-persistence',
+      tier1HostPersistenceScan,
+      pkgJson,
+      files,
+      registryMeta,
+      allFiles || files
+    ))
+  );
+  findings.push(
+    ...(await runTier1(
+      'tier1-install-config-abuse',
+      tier1InstallConfigAbuseScan,
+      pkgJson,
+      files,
+      registryMeta,
+      allFiles || files
     ))
   );
   return findings.sort((a, b) => b.severity.localeCompare(a.severity));

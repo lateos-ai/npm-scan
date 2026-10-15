@@ -312,6 +312,10 @@ export default {
       openai_token_targeting: 90,
       gemini_token_targeting: 85,
       mistral_token_targeting: 85,
+      openrouter_token_targeting: 80,
+      slack_token_targeting: 75,
+      sendgrid_token_targeting: 75,
+      google_api_key_targeting: 75,
       cursor_token_targeting: 85,
       ai_config_targeting: 80,
       ai_token_exfiltration: 95,
@@ -564,6 +568,7 @@ export default {
       editor_config: 0,
     },
     pattern_weights: {
+      shipped_workflow_secret_exfil: 90,
       shipped_workflow_privileged_trigger: 70,
       shipped_exec_config: 65,
       dynamic_surface_write: 55,
@@ -585,6 +590,59 @@ export default {
     timeout_ms: 8000,
     notes:
       'D31: tarball-to-git differential (ERR_TARBALL_GIT_DESYNC). Answers the question provenance cannot: npm attestations bind an attestation to a tarball, never a tarball to its source, so a build from a dirty working tree produces a genuine attestation with a perfectly matching digest. Provenance state is deliberately never consulted — a valid attestation over tampered output is the attack. Build-output directories are skipped rather than treated as clean, and the skip count is reported so callers can distinguish verified from unchecked.',
+  },
+  'D32-HOST-PERSISTENCE': {
+    enabled: true,
+    flag_threshold: 80,
+    warn_threshold: 60,
+    max_file_bytes: 512000,
+    anchor_signals: [
+      'deadman_switch',
+      'launch_agent_user',
+      'loginctl_linger',
+      'systemd_user_unit',
+      'launchctl_plist_write',
+    ],
+    pattern_weights: {
+      deadman_switch: 95,
+      launch_agent_user: 85,
+      loginctl_linger: 85,
+      systemd_user_unit: 80,
+      launchctl_plist_write: 75,
+      self_destruct_threshold: 65,
+      token_monitor_poll: 60,
+    },
+    notes:
+      'D32: user-level host persistence + dead-man switch (keyv/cacheable, 2026-08). Complements msh D2 / axios D3, which cover only SYSTEM units (/etc/systemd/system, /Library/LaunchDaemons). A finding requires an anchor (an autostart install or the dead-man switch); token_monitor_poll and self_destruct_threshold only modulate. The dead-man switch is AST-gated so eval("literal") never fires — only eval/exec of a variable-supplied handler correlated with a credential-revocation check. Weights are pre-telemetry; retune on the Linux corpus before trusting FP numbers.',
+  },
+  'D33-INSTALL-CONFIG-ABUSE': {
+    enabled: true,
+    flag_threshold: 80,
+    warn_threshold: 60,
+    pattern_weights: {
+      pnpmfile_mutates_and_dispatches: 85,
+      yarnrc_external_plugin: 80,
+      bunfig_preload: 75,
+      pnpmfile_dispatch: 70,
+      override_resolved_off_registry: 80,
+      bunfig_trusted_dependencies: 55,
+    },
+    notes:
+      'D33: install-time execution outside package.json scripts (gap-analysis-2026-08 §5). .pnpmfile.cjs readPackage hooks, .yarnrc(.yml) plugins, bunfig.toml preload/trustedDependencies, and package.json overrides/resolutions. Presence of a .pnpmfile.cjs is not suspicious on its own — a benign monorepo hook scores nothing; only hooks that reach outside the package (exec/network) or rewrite a dependency fire. overrides/resolutions flag only off-registry protocols (git+ssh/ssh/http/file/link); github:/git+https:/npm: aliasing is too common to flag.',
+  },
+  'TIER1-MANIFEST-CONFUSION': {
+    enabled: true,
+    flag_threshold: 85,
+    warn_threshold: 70,
+    pattern_weights: {
+      dependency_divergence: 90,
+      optional_dependency_divergence: 85,
+      peer_dependency_divergence: 80,
+      script_divergence: 100,
+      bin_divergence: 90,
+    },
+    notes:
+      'D34: registry version manifest vs tarball package.json. The two come from the same publish, so any divergence in a capability-bearing field (dependencies, optionalDependencies, peerDependencies, scripts, bin) has no benign explanation. Registry-injected fields (_id, dist, _npmUser, gitHead, …) are stripped before diffing; a lifecycle hook present only in the tarball is always critical. Returns [] when registryMeta is absent (local --file scans).',
   },
   SERVERLESS_PAAS_WATCHLIST: {
     domains: ['*.run.app', '*.web.app', '*.vercel.app', '*.netlify.app', '*.workers.dev'],

@@ -243,6 +243,68 @@ function inspectHooks(parsed) {
   return commands.length ? `hook commands declared: ${commands[0].slice(0, 120)}` : null;
 }
 
+/* ------------------------------------------------------------------ *
+ * 3. Shipped GitHub Actions workflow content                        *
+ * ------------------------------------------------------------------ */
+
+const PRIVILEGED_TRIGGER_RE = /pull_request_target|workflow_run/;
+const SECRET_REF_RE = /\$\{\{\s*secrets\.[A-Za-z0-9_]+\s*\}\}/;
+const RAW_IP_TARGET_RE = /https?:\/\/\d{1,3}(?:\.\d{1,3}){3}/;
+const URL_HOST_RE = /https?:\/\/([^/\s"'>{}]+)/gi;
+// GhostAction: `fetch-depth: 0` + `git log -p --all` reconstructs the full
+// patch history, then a grep sweep pulls committed credentials out of it.
+const HISTORY_SWEEP_RE = /fetch-depth:\s*0|git\s+log\s+[^|\n]*--all|git\s+log\s+-p\b/;
+const CRED_GREP_RE =
+  /grep\b[^\n]*(AKIA|sk-|ghp_|github_pat_|BEGIN [A-Z ]*PRIVATE KEY|secret[_ ]?access[_ ]?key)/i;
+
+// Hosts a legitimate workflow is expected to talk to with a bound secret
+// (package publish, API calls). Exfiltration to any other destination is the
+// signal; publishing to your own registry is not.
+const ALLOWED_WORKFLOW_HOSTS =
+  /^(?:[\w-]+\.)*(?:npmjs\.org|npmjs\.com|yarnpkg\.com|pypi\.org|rubygems\.org|crates\.io|github\.com|githubusercontent\.com|gitlab\.com|bitbucket\.org|docker\.com|docker\.io|ghcr\.io|nuget\.org|nodejs\.org|amazonaws\.com|azure\.com|googleapis\.com|cloud\.google\.com|vaultproject\.io)$/i;
+
+function hasOffAllowlistTarget(content) {
+  URL_HOST_RE.lastIndex = 0;
+  let match;
+  while ((match = URL_HOST_RE.exec(content)) !== null) {
+    const host = match[1].toLowerCase();
+    if (/^\d{1,3}(?:\.\d{1,3}){3}$/.test(host)) {
+      return true; // raw IP is never an allowlisted publishing endpoint
+    }
+    if (!ALLOWED_WORKFLOW_HOSTS.test(host)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * @returns {{type: string, detail: string}|null} the strongest workflow signal
+ */
+function inspectWorkflowContent(content) {
+  const secretBound = SECRET_REF_RE.test(content);
+  const historySweep = HISTORY_SWEEP_RE.test(content) && CRED_GREP_RE.test(content);
+  const secretToForeignHost = secretBound && hasOffAllowlistTarget(content);
+  const secretToIp = secretBound && RAW_IP_TARGET_RE.test(content);
+
+  if (historySweep || secretToForeignHost || secretToIp) {
+    const why = historySweep
+      ? 'sweeps git history for committed credentials'
+      : 'sends bound secrets to a non-allowlisted destination';
+    return {
+      type: 'shipped_workflow_secret_exfil',
+      detail: `shipped workflow ${why}: ${content.match(/.{0,80}/)?.[0] || ''}`.slice(0, 200),
+    };
+  }
+  if (PRIVILEGED_TRIGGER_RE.test(content)) {
+    return {
+      type: 'shipped_workflow_privileged_trigger',
+      detail: 'shipped workflow uses a privileged trigger',
+    };
+  }
+  return null;
+}
+
 function analyzeShippedConfig(file, pkgJson) {
   const filePath = file.path || file.name || '';
   const surface = matchSurface(filePath);
@@ -255,14 +317,14 @@ function analyzeShippedConfig(file, pkgJson) {
     return [];
   }
 
-  // GitHub Actions workflows are YAML; a shipped workflow is itself the signal.
+  // GitHub Actions workflows are YAML; the content decides the signal.
   if (/\.ya?ml$/i.test(filePath)) {
-    const risky = /pull_request_target|workflow_run/.test(content);
+    const wf = inspectWorkflowContent(content);
     return [
       {
-        type: risky ? 'shipped_workflow_privileged_trigger' : 'shipped_exec_config',
-        detail: risky
-          ? `shipped workflow uses a privileged trigger: ${filePath}`
+        type: wf ? wf.type : 'shipped_exec_config',
+        detail: wf
+          ? `${wf.detail} (${filePath})`
           : `package ships a GitHub Actions workflow: ${filePath}`,
         file: filePath,
         line: 1,
@@ -380,7 +442,10 @@ export function scan(pkgJson, jsFiles, _registryMeta, allFiles) {
   );
   const hasDynamic = scored.some((s) => s.type === 'dynamic_surface_write');
   const hasShipped = scored.some(
-    (s) => s.type === 'shipped_exec_config' || s.type === 'shipped_workflow_privileged_trigger'
+    (s) =>
+      s.type === 'shipped_exec_config' ||
+      s.type === 'shipped_workflow_privileged_trigger' ||
+      s.type === 'shipped_workflow_secret_exfil'
   );
 
   let severity;
