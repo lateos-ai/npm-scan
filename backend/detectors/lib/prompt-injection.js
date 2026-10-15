@@ -1,3 +1,5 @@
+import { KNOWN_REPUTABLE_PACKAGES } from '../../policy.js';
+
 const LLM_CONTEXT_FILE_PATTERNS = [
   /(^|[\\/])\.cursorrules$/i,
   /(^|[\\/])CLAUDE\.md$/i,
@@ -60,22 +62,43 @@ function extractLines(content, matchIndex) {
   return (before.match(/\n/g) || []).length + 1;
 }
 
-export function scanPromptInjection(allFiles) {
-  if (!allFiles || allFiles.length === 0) return [];
+/**
+ * Iterate every match of a regex without depending on the `g` flag or on shared
+ * `lastIndex` state. The pattern table mixes global and non-global literals;
+ * running a non-global regex through `exec` in a loop never advances
+ * `lastIndex`, so the original `while (exec())` loop spun forever the instant a
+ * pattern matched. A fresh global copy per call — with a zero-length guard —
+ * is safe for both shapes.
+ */
+function* matchAll(regex, str) {
+  const flags = regex.flags.includes('g') ? regex.flags : `${regex.flags}g`;
+  const global = new RegExp(regex.source, flags);
+  let match;
+  while ((match = global.exec(str)) !== null) {
+    yield match;
+    if (match.index === global.lastIndex) global.lastIndex++;
+  }
+}
+
+export function scanPromptInjection(pkgJson, _jsFiles, _registryMeta, allFiles) {
+  const files = allFiles || [];
+  if (files.length === 0) return [];
+
+  const pkgName = pkgJson?.name;
+  if (pkgName && KNOWN_REPUTABLE_PACKAGES.has(pkgName)) return [];
 
   const findings = [];
 
-  for (const file of allFiles) {
+  for (const file of files) {
     const filePath = file.path || file.name || '';
     if (!isTargetFile(filePath)) continue;
 
     const content = file.content || '';
+    if (!content) continue;
 
     for (const [groupName, patterns] of Object.entries(INJECTION_PATTERNS)) {
       for (const regex of patterns) {
-        regex.lastIndex = 0;
-        let match;
-        while ((match = regex.exec(content)) !== null) {
+        for (const match of matchAll(regex, content)) {
           const line = extractLines(content, match.index);
           findings.push({
             detector: 'prompt-injection',

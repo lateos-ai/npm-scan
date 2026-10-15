@@ -21,6 +21,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - **Thresholds**: added `D32-HOST-PERSISTENCE`, `D33-INSTALL-CONFIG-ABUSE`, `TIER1-MANIFEST-CONFUSION` entries; added `shipped_workflow_secret_exfil` to D30 pattern weights and new provider groups to D22.
 - **Detector index**: wired D32, D33, D34 into `backend/detectors/index.js` via `runTier1`.
 
+### Fixed
+- **`lib/prompt-injection.js` was dead code and an infinite-loop hazard** — two coupled defects fixed together: (1) `scanPromptInjection(allFiles)` was invoked through `runTier1` as `scanFn(pkgJson, files, registryMeta, allFiles)`, so it received `pkgJson` where it expected the `allFiles` array and returned `[]` on every scan; the signature now matches the tier-1 convention and the detector actually runs. (2) 11 of 15 patterns lacked the `/g` flag inside a `while (regex.exec())` loop — a non-global `exec` never advances `lastIndex`, so the loop would have spun forever the instant the signature fix armed it. Replaced with a flag-agnostic `matchAll` generator (fresh global copy per pattern, zero-length guard). Added a reputable-package bail and `test/prompt-injection.test.js` (7 tests) including a pipeline regression guard.
+
 ### Notes
 - D32/D33/D34 weights are **pre-telemetry** (PoC-calibrated, like D29/D30). `test/detectors-corpus.test.js` cannot run on Windows; re-run the corpus suite on Linux before trusting FP numbers.
 - Threat-model: a worm can mint its own valid Sigstore provenance (keyv/cacheable), so "fresh verifiable provenance" must never suppress findings. `lib/slsa-verifier.js` keeps `verified: false` until cryptographic verification lands; D31 remains the only tarball-to-source trust anchor.
